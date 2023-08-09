@@ -1,0 +1,3 @@
+/dts-v1/;
+
+#include "meizu-sdm845.dtsi"

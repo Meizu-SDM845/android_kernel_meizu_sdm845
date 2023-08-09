@@ -1,0 +1,84 @@
+#include "../sdm845-v2.1.dtsi"
+#include "meizu-sdm845-printctl.dtsi"
+#include "meizu-sdm845-usb.dtsi"
+#include "meizu-sdm845-display.dtsi"
+
+/ {
+	model = "Qualcomm Technologies, Inc. SDM845 v2.1 SoC";
+	compatible = "qcom,sdm845";
+	qcom,board-id = <0 0>;
+
+	aliases {
+		spi1 = &qupv3_se0_spi;
+		spi2 = &qupv3_se7_spi;
+	};
+
+	reserved-memory {
+		ramoops_mem: ramoops@9ff00000 {
+			compatible = "ramoops";
+			reg = <0x00 0x9ff00000 0x00 0x200000>;
+			record-size = <0x4000>;
+			console-size = <0x40000>;
+		};
+
+		psn_mem: psn_mem_region@a0100000 {
+			compatible = "removed-dma-pool";
+			no-map;
+			reg = <0x00 0xa0100000 0x00 0x400>;
+		};
+	};
+
+	firmware: firmware {
+		android {
+			compatible = "android,firmware";
+            
+			vbmeta {
+				compatible = "android,vbmeta";
+				parts = "vbmeta,boot,system,custom,vendor,dtbo,recovery";
+			};
+
+			fstab {
+				compatible = "android,fstab";
+
+				system {
+					compatible = "android,system";
+					dev = "/dev/block/platform/soc/1d84000.ufshc/by-name/system";
+					type = "ext4";
+					mnt_flags = "ro,barrier=1,discard";
+					fsmgr_flags = "wait,avb";
+					status = "ok";
+				};
+
+				system_ext {
+					compatible = "android,system_ext";
+					dev = "/dev/block/platform/soc/1d84000.ufshc/by-name/custom";
+					type = "ext4";
+					mnt_flags = "ro,barrier=1,discard";
+					fsmgr_flags = "wait,avb";
+					status = "ok";
+				};
+
+				vendor {
+					compatible = "android,vendor";
+					dev = "/dev/block/platform/soc/1d84000.ufshc/by-name/vendor";
+					type = "ext4";
+					mnt_flags = "ro,barrier=1,discard";
+					fsmgr_flags = "wait,avb";
+					status = "ok";
+				};
+			};
+		};
+	};
+};
+
+&qcom_seecom {
+	/delete-property/ qcom,commonlib64-loaded-by-uefi;
+};
+
+&qupv3_se6_4uart {
+	compatible = "qcom,msm-geni-serial-hs", "qcom,msm-geni-uart";
+};
+
+&qupv3_se7_4uart {
+	compatible = "qcom,msm-geni-serial-hs", "qcom,msm-geni-uart";
+};

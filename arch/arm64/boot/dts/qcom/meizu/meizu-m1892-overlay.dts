@@ -1,0 +1,11 @@
+/dts-v1/;
+/plugin/;
+
+#include "meizu-sdm845-overlay.dtsi"
+#include "meizu-m1892-display.dtsi"
+
+/{
+	qcom,battery-data {
+		#include "batterydata-meizu-m1892-3600mah.dtsi"
+	};
+};

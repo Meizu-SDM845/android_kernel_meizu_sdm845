@@ -1,0 +1,71 @@
+#include "dsi-panel-sofef00m-amoled-fhd-cmd.dtsi"
+
+&soc {
+	dsi_sofef00m_amoled_cmd_display: dsi-display@20 {
+		compatible = "qcom,dsi-display";
+		label = "dsi_sofef00m_amoled_cmd_display";
+		qcom,display-type = "primary";
+		qcom,dsi-ctrl = <&mdss_dsi0>;
+		qcom,dsi-phy = <&mdss_dsi_phy0>;
+		clocks = <&mdss_dsi0_pll BYTECLK_MUX_0_CLK>,
+			<&mdss_dsi0_pll PCLK_MUX_0_CLK>;
+		clock-names = "src_byte_clk", "src_pixel_clk";
+		pinctrl-names = "panel_active", "panel_suspend";
+		pinctrl-0 = <&sde_dsi_active &sde_te_active>;
+		pinctrl-1 = <&sde_dsi_suspend &sde_te_suspend>;
+		qcom,platform-te-gpio = <&tlmm 10 0>;
+		qcom,platform-reset-gpio = <&pm8998_gpios 8 0>;
+		qcom,platform-err-fg-gpio = <&tlmm 12 0>;
+		qcom,dsi-panel = <&dsi_sofef00m_amoled_cmd>;
+		vddio-supply = <&lcd_vddio_regulator>;
+		vdd-supply = <&lcd_vdd_regulator>;
+		qcom,dsi-display-active;
+	};
+};
+
+&dsi_sofef00m_amoled_cmd {
+	qcom,mdss-pan-physical-width-dimension = <68>;
+	qcom,mdss-pan-physical-height-dimension = <136>;
+    
+	qcom,mdss-dsi-display-timings {
+		timing@0 {
+			qcom,mdss-dsi-on-command = [
+				05 01 00 00 15 00 02 11 00 39 01 00
+				00 00 00 03 F0 5A 5A 39 01 00 00 00
+				00 03 FC 5A 5A 39 01 00 00 00 00 02
+				B0 03 39 01 00 00 00 00 02 D2 9E 39
+				01 00 00 00 00 03 F0 A5 A5 39 01 00
+				00 00 00 03 FC A5 A5 39 01 00 00 00
+				00 03 F0 5A 5A 15 01 00 00 00 00 02
+				35 00 39 01 00 00 00 00 03 F0 A5 A5
+				39 01 00 00 00 00 05 2B 00 00 08 6F
+				39 01 00 00 00 00 03 F0 5A 5A 39 01
+				00 00 00 00 02 B0 01 39 01 00 00 00
+				00 02 BB 03 39 01 00 00 00 00 02 B0
+				03 39 01 00 00 00 00 04 EF 33 31 14
+				39 01 00 00 00 00 03 F0 A5 A5 15 01
+				00 00 00 00 02 53 28 39 01 00 00 00
+				00 03 51 00 00 15 01 00 00 00 00 02
+				55 00 39 01 00 00 00 00 03 F0 5A 5A
+				39 01 00 00 00 00 03 F0 5A 5A 15 01
+				00 00 00 00 02 B0 05 15 01 00 00 00
+				00 02 B1 03 39 01 00 00 00 00 03 F0
+				A5 A5 15 01 00 00 00 00 02 B0 02 39
+				01 00 00 00 00 40 E2 B0 0C 04 3C D3
+				12 07 04 AE 47 E8 CB C4 11 C1 E9 E9
+				17 FF FF FF EF 11 05 00 C4 00 07 04
+				B5 00 DA C1 FF 16 C6 E8 E8 0E FF FF
+				FF BB 03 00 12 DC 01 06 04 A6 0D F2
+				C8 C4 0A DE D4 ED 05 FF FF FF 39 01
+				00 00 00 00 03 F0 A5 A5 39 01 00 00
+				00 00 03 F0 5A 5A 15 01 00 00 00 00
+				02 B0 01 15 01 00 00 00 00 02 E2 01
+				39 01 00 00 00 00 03 F0 A5 A5 39 01
+				00 00 00 00 03 F0 5A 5A 15 01 00 00
+				00 00 02 B0 02 39 01 00 00 00 00 05
+				D5 02 00 14 14 39 01 00 00 6E 00 03
+				F0 A5 A5 05 01 00 00 00 00 02 29 00
+			];
+		};
+	};
+};

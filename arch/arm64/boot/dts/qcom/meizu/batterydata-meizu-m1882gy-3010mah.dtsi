@@ -1,0 +1,71 @@
+qcom,meizu_m1882gy_3010mah {
+	/* 3511331_meizu_m1882gy_3010mah_averaged_masterslave_jun4th2018 */
+	qcom,batt-id-kohm = <100>;
+	qcom,battery-name = "COSLIGHT-JIADE";
+	qcom,fastchg-current-ma = <2950>;
+	qcom,max-voltage-uv = <4400000>;
+	qcom,battery-beta = <3435>;
+	qcom,fg-cc-cv-threshold-mv = <4390>;
+	qcom,checksum = <4380>;
+	qcom,battery-type = "meizu_m1882gy_3010mah";
+	qcom,gui-version = "PMI8998GUI - 2.0.0.58";
+	qcom,nom-batt-capacity-mah = <3010>;
+	qcom,fg-profile-data = [
+		16 21 FB 0D
+		9F 0B 4B 05
+		F1 1C 3D FB
+		EB 04 90 03
+		7D 17 D8 23
+		92 44 16 5A
+		8C 00 00 00
+		11 00 00 00
+		00 00 83 BA
+		0C CD D4 B4
+		33 00 08 00
+		17 E3 BD 07
+		6C 05 A5 01
+		90 15 4D FD
+		96 07 44 2B
+		28 06 09 20
+		27 00 14 00
+		6F 20 CB 04
+		0C 0B C9 05
+		E0 1C 9C 02
+		B6 0C 7F 0B
+		8E 18 DE 23
+		E0 4D 3B 5B
+		75 00 00 00
+		0E 00 00 00
+		00 00 13 CC
+		5B C3 89 BB
+		23 00 00 00
+		A5 EA BD 07
+		5B 06 CE F3
+		E3 FD 60 01
+		AB 01 EC 22
+		C3 33 CC FF
+		07 10 00 00
+		08 0C 66 46
+		23 00 40 00
+		63 01 0A FA
+		FF 00 00 00
+		00 00 00 00
+		00 00 00 00
+		00 00 00 00
+		00 00 00 00
+		00 00 00 00
+		00 00 00 00
+		00 00 00 00
+		00 00 00 00
+		00 00 00 00
+		00 00 00 00
+		00 00 00 00
+		00 00 00 00
+		00 00 00 00
+		00 00 00 00
+		00 00 00 00
+		00 00 00 00
+		00 00 00 00
+		00 00 00 00
+	];
+};
