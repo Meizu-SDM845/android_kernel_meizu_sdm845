@@ -138,29 +138,29 @@ config ARCH_SDM845
 	  wish to build a kernel that runs on this chipset, say 'N' here.
 
 config MEIZU_QCOM
-    bool "Meizu Qualcomm"
-    depends on ARCH_QCOM
-    help
-        Support for Qualcomm-based Meizu products
+	bool "Meizu Qualcomm"
+	depends on ARCH_QCOM
+	help
+	  This enables support for Qualcomm-based Meizu products.
 
 config MEIZU_SDM845
-    bool "Meizu SDM845"
-    depends on ARCH_SDM845
-    select MEIZU_QCOM
-    help
-        Support for SDM845-based Meizu products
+	bool "Meizu SDM845"
+	depends on ARCH_SDM845
+	select MEIZU_QCOM
+	help
+	  This enables support for SDM845-based Meizu products.
 
 config MEIZU_M1882
-        bool "Meizu 16th"
-        select MEIZU_SDM845
-        help
-          Support for Meizu 16th (m1882)
+	bool "Meizu 16th"
+	select MEIZU_SDM845
+	help
+	  This enables support for Meizu 16th product.
 
 config MEIZU_M1892
-        bool "Meizu 16th Plus"
-        select MEIZU_SDM845
-        help
-          Support for Meizu 16th Plus (m1892)
+	bool "Meizu 16th Plus"
+	select MEIZU_SDM845
+	help
+	  This enables support for Meizu 16th Plus product.
 
 config ARCH_SDM845_VM
 	bool "Enable Support for Qualcomm Technologies Inc. SDM845 VM"
