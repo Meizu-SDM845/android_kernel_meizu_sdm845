@@ -136,6 +136,12 @@ static const char *sd_cache_types[] = {
 	"write back, no read (daft)"
 };
 
+#define SD_PARTITION_RAW_RW_API
+#ifdef SD_PARTITION_RAW_RW_API
+static void sd_raw_partition_rw_init(struct gendisk *gd);
+static void sd_raw_partition_rw_deinit(struct gendisk *gd);
+#endif
+
 static void sd_set_flush_flag(struct scsi_disk *sdkp)
 {
 	bool wc = false, fua = false;
@@ -3008,6 +3014,10 @@ static void sd_probe_async(void *data, async_cookie_t cookie)
 
 	sd_revalidate_disk(gd);
 
+#ifdef SD_PARTITION_RAW_RW_API
+	sd_raw_partition_rw_init(gd);
+#endif
+
 	scsi_autopm_put_device(sdp);
 	put_device(&sdkp->dev);
 }
@@ -3137,6 +3147,10 @@ static int sd_remove(struct device *dev)
 	dev_t devt;
 
 	sdkp = dev_get_drvdata(dev);
+#ifdef SD_PARTITION_RAW_RW_API
+	sd_raw_partition_rw_deinit(sdkp->disk);
+#endif
+
 	devt = disk_devt(sdkp->disk);
 	scsi_autopm_get_device(sdkp->device);
 
@@ -3421,3 +3435,175 @@ static void sd_print_result(const struct scsi_disk *sdkp, const char *msg,
 			  msg, host_byte(result), driver_byte(result));
 }
 
+#ifdef SD_PARTITION_RAW_RW_API
+#include <linux/buffer_head.h>
+
+static struct gendisk *target_disk = NULL;
+static int partition_major = 0;
+static int partition_minor = 0;
+
+#define UFS_BLOCK_SIZE (4096)
+
+dev_t sd_lookup_partition(const char *part_name, sector_t *start, sector_t *nr_sect)
+{
+	struct disk_part_iter piter;
+	struct hd_struct *part;
+
+	dev_t devt = MKDEV(0, 0);
+
+	if (!target_disk)
+		return devt;
+
+	disk_part_iter_init(&piter, target_disk, DISK_PITER_INCL_EMPTY);
+	while ((part = disk_part_iter_next(&piter))) {
+		if (strcmp(part->info->volname, part_name) == 0) {
+			devt = part->__dev.devt;
+			*start = part->start_sect;
+			*nr_sect = part->nr_sects;
+			partition_major = target_disk->major;
+			partition_minor	= target_disk->first_minor;
+			break;
+		}
+	}
+	disk_part_iter_exit(&piter);
+
+	return devt;
+}
+
+static int sd_block_rw(int write, sector_t index, sector_t index_offset, void *buffer, size_t len)
+{
+	struct block_device *bdev;
+	struct buffer_head *bh = NULL;
+	fmode_t mode = FMODE_READ;
+	int err = -EIO;
+
+	if (len > UFS_BLOCK_SIZE)
+		return -EINVAL;
+	bdev = bdget(MKDEV(partition_major, partition_minor));
+
+	if (!bdev)
+		return -EIO;
+
+	mode = write ? FMODE_WRITE : FMODE_READ;
+	if (blkdev_get(bdev, mode, NULL)) {
+		bdput(bdev);
+		goto out;
+	}
+	set_blocksize(bdev, UFS_BLOCK_SIZE);
+	bh = __getblk(bdev, index, UFS_BLOCK_SIZE);
+
+	if (bh) {
+		clear_buffer_uptodate(bh);
+		get_bh(bh);
+		lock_buffer(bh);
+		bh->b_end_io = end_buffer_read_sync;
+		submit_bh(REQ_OP_READ, 0, bh);
+		wait_on_buffer(bh);
+		if (unlikely(!buffer_uptodate(bh))) {
+			pr_err("%s: read error!!\n", __func__);
+			goto out;
+		}
+		if (write) {
+			lock_buffer(bh);
+			memcpy(bh->b_data+index_offset, buffer, len);
+			bh->b_end_io = end_buffer_write_sync;
+			get_bh(bh);
+			submit_bh(REQ_OP_WRITE, 0, bh);
+			wait_on_buffer(bh);
+			if (unlikely(!buffer_uptodate(bh))) {
+				pr_err("%s: write error!!\n", __func__);
+				goto out;
+			}
+		} else {
+			memcpy(buffer, bh->b_data+index_offset, len);
+		}
+		err = 0;
+	} else {
+		pr_info("%s error\n", __func__);
+	}
+
+out:
+	brelse(bh);
+	blkdev_put(bdev, mode);
+
+	return err;
+}
+
+int sd_partition_rw(const char *part_name, int write, loff_t offset,
+						void *buffer, size_t len)
+{
+	int ret = 0;
+	void *p = buffer;
+	size_t size;
+	sector_t first_sect;
+	sector_t index;
+	sector_t index_offset;
+
+	dev_t devt;
+	sector_t start, nr_sect;
+
+	if (!target_disk)
+		return -ENODEV;
+
+	if (buffer == NULL)
+		return -EINVAL;
+
+	devt = sd_lookup_partition(part_name, &start, &nr_sect);
+	start = start / (UFS_BLOCK_SIZE / 512);
+	nr_sect = nr_sect / (UFS_BLOCK_SIZE / 512);
+
+	if (!devt) {
+		pr_err("%s: can't find partition(%s)\n", __func__, part_name);
+		return -ENODEV;
+	}
+
+	if (offset < 0 || (offset + len) > nr_sect * UFS_BLOCK_SIZE) {
+		pr_err("%s: access area exceed parition(%s) range.\n", __func__, part_name);
+		return -EINVAL;
+	}
+
+	index = start + offset / UFS_BLOCK_SIZE;
+	index_offset = offset % UFS_BLOCK_SIZE;
+	first_sect = index;
+
+	while (len > 0) {
+		size = len;
+
+		if (size > UFS_BLOCK_SIZE)
+			size = UFS_BLOCK_SIZE;
+
+		if (index_offset > 0 && index == first_sect) {
+			if (size > UFS_BLOCK_SIZE - index_offset)
+				size = UFS_BLOCK_SIZE - index_offset;
+		}
+
+		if (index == first_sect)
+			ret = sd_block_rw(write, index, index_offset, p, size);
+		else
+			ret = sd_block_rw(write, index, 0, p, size);
+
+		if (ret) {
+			pr_err("[%s][%lu] error %d\n", __func__, (unsigned long)len, ret);
+			break;
+		}
+
+		len -= size;
+		index++;
+		p += size;
+	}
+
+	return ret;
+}
+
+static void sd_raw_partition_rw_init(struct gendisk *gd)
+{
+	if (gd && !strcmp(gd->disk_name, "sde"))
+		target_disk = gd;
+}
+
+static void sd_raw_partition_rw_deinit(struct gendisk *gd)
+{
+	if (gd && !strcmp(gd->disk_name, "sde"))
+		target_disk = NULL;
+}
+#endif
