@@ -1,0 +1,27 @@
+&soc {
+    /delete-node/ csr@6b0e000;
+
+    rpmh-regulator-ldoa21 {
+        status = "disabled";
+    };
+
+    lcd_vddio_fixed_regulator {
+        compatible = "regulator-fixed";
+        regulator-name = "lcd_vddio_regulator";
+        regulator-min-microvolt = <1800000>;
+        regulator-max-microvolt = <1800000>;
+        regulator-boot-on;
+        enable-active-high;
+        gpio = <&tlmm 51 0>;
+    };
+
+    lcd_vdd_fixed_regulator {
+        compatible = "regulator-fixed";
+        regulator-name = "lcd_vdd_regulator";
+        regulator-min-microvolt = <3000000>;
+        regulator-max-microvolt = <3000000>;
+        regulator-boot-on;
+        enable-active-high;
+        gpio = <&tlmm 26 0>;
+    };
+};

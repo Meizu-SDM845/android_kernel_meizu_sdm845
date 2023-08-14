@@ -2,7 +2,7 @@
 /plugin/;
 
 #include "meizu-sdm845-overlay.dtsi"
-#include "meizu-m1892-display.dtsi"
+#include "meizu-m1892-overlay-display.dtsi"
 
 /{
 	qcom,battery-data {

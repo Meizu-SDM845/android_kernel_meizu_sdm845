@@ -69,3 +69,22 @@
 		};
 	};
 };
+
+&qupv3_se5_i2c {
+	status = "ok";
+
+	nq@49 { 
+		compatible = "st,fts";
+		reg = <0x49>;
+		interrupt-parent = <0xffffffff>;
+		interrupts = <0x7d 0x00>;
+		avdd-supply = <&pm8998_l28>;
+		vdd-supply = <&pm8998_l14>;
+		st,regulator_avdd = "avdd";
+		st,regulator_dvdd = "vdd";
+		st,irq-gpio = <&tlmm 0x7d 0x00>;
+		st,reset-gpio = <&tlmm 0x7e 0x00>;
+		pinctrl-names = "tp_int";
+		pinctrl-0 = <&tp_pins_tp_eint_as_int>;
+	}; 
+};

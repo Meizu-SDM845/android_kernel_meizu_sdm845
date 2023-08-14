@@ -71,8 +71,37 @@
 	};
 };
 
+&soc {
+	debug_tools {
+		compatible = "qcom,timestamp";
+		status = "okay";
+	};
+};
+
+&clock_cpucc {
+	l3-devs = <&l3_cpu0 &l3_cpu4 &l3_cdsp>;
+};
+
+&pcie0 {
+	/delete-node/ qcom,phy-status-offset;
+};
+
+&clock_debug {
+	qcom,cc-count = <5>;
+};
+
+&qcom_cedev {
+	/delete-node/ qcom_cedev_ns_cb;
+	/delete-node/ qcom_cedev_s_cb;
+};
+
 &qcom_seecom {
+	reg = <0x86d00000 0x3e00000>;
 	/delete-property/ qcom,commonlib64-loaded-by-uefi;
+};
+
+&removed_region {
+	reg = <0 0x85fc0000 0 0x4b40000>;
 };
 
 &qupv3_se6_4uart {
@@ -80,5 +109,13 @@
 };
 
 &qupv3_se7_4uart {
+	compatible = "qcom,msm-geni-serial-hs", "qcom,msm-geni-uart";
+};
+
+&qupv3_se9_2uart {
+	compatible = "qcom,msm-geni-serial-hs", "qcom,msm-geni-uart";
+};
+
+&qupv3_se10_2uart {
 	compatible = "qcom,msm-geni-serial-hs", "qcom,msm-geni-uart";
 };
