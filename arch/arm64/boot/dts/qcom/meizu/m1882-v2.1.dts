@@ -1,0 +1,15 @@
+/*
+ * Copyright (C) 2023 transaero21 <transaero21@elseboot.ru>
+ *
+ * SPDX-License-Identifier: GPL-2.0
+ */
+
+/dts-v1/;
+
+#include "sdm845-v2.1.dtsi"
+
+/ {
+	model = "Qualcomm Technologies, Inc. SDM845 v2.1 SoC (Meizu 16th)";
+	compatible = "qcom,sdm845";
+	qcom,board-id = <0 0>;
+};

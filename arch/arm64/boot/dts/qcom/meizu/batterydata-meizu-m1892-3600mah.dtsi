@@ -1,3 +1,9 @@
+/*
+ * Copyright (C) 2023 transaero21 <transaero21@elseboot.ru>
+ *
+ * SPDX-License-Identifier: GPL-2.0
+ */
+
 qcom,meizu_m1892_3600mah {
 	/* fg-gen3-batterydata-m1892-3600mah */
 	qcom,batt-id-kohm = <100>;

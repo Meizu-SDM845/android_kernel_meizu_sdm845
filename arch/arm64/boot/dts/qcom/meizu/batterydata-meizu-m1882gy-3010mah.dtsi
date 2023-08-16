@@ -1,15 +1,22 @@
+/*
+ * Copyright (C) 2023 transaero21 <transaero21@elseboot.ru>
+ *
+ * SPDX-License-Identifier: GPL-2.0
+ */
+
 qcom,meizu_m1882gy_3010mah {
 	/* 3511331_meizu_m1882gy_3010mah_averaged_masterslave_jun4th2018 */
-	qcom,batt-id-kohm = <100>;
-	qcom,battery-name = "COSLIGHT-JIADE";
-	qcom,fastchg-current-ma = <2950>;
+	qcom, = <0x18>;
 	qcom,max-voltage-uv = <4400000>;
+	qcom,fastchg-current-ma = <2950>;
+	qcom,nom-batt-capacity-mah = <3010>;
+	qcom,batt-id-kohm = <100>;
 	qcom,battery-beta = <3435>;
 	qcom,fg-cc-cv-threshold-mv = <4390>;
-	qcom,checksum = <4380>;
+	qcom,battery-name = "COSLIGHT-JIADE";
 	qcom,battery-type = "meizu_m1882gy_3010mah";
+	qcom,checksum = <4380>;
 	qcom,gui-version = "PMI8998GUI - 2.0.0.58";
-	qcom,nom-batt-capacity-mah = <3010>;
 	qcom,fg-profile-data = [
 		16 21 FB 0D
 		9F 0B 4B 05

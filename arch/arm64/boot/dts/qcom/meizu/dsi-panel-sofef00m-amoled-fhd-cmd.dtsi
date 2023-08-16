@@ -1,3 +1,9 @@
+/*
+ * Copyright (C) 2023 transaero21 <transaero21@elseboot.ru>
+ *
+ * SPDX-License-Identifier: GPL-2.0
+ */
+
 &mdss_mdp {
 	dsi_sofef00m_amoled_cmd: qcom,mdss_dsi_sofef00m_amoled_fhd_cmd {
 		qcom,mdss-dsi-panel-name = "sofef00m amoled fhd+ cmd mode dsi panel";
@@ -32,11 +38,11 @@
 		qcom,mdss-dsi-mdp-trigger = "none";
 		qcom,mdss-dsi-lp11-init;
 		qcom,mdss-dsi-bl-pmic-control-type = "bl_ctrl_dcs";
-		qcom,mdss-dsi-bl-min-level = <13>;
+		qcom,mdss-dsi-bl-min-level = <12>;
 		qcom,mdss-dsi-bl-max-level = <1023>;
 		qcom,mdss-brightness-max-level = <1023>;
-//		qcom,mdss-pan-physical-width-dimension = <0>;
-//		qcom,mdss-pan-physical-height-dimension = <0>;
+		qcom,mdss-pan-physical-width-dimension = <0>;
+		qcom,mdss-pan-physical-height-dimension = <0>;
 		qcom,mdss-dsi-reset-sequence = <1 10 0 10 1 10>;
 		qcom,esd-check-enabled;
 		qcom,mdss-dsi-panel-status-check-mode = "reg_read";
@@ -55,9 +61,9 @@
 		qcom,mdss-dsi-panel-max-error-count = <5>;
 		qcom,mdss-dsi-t-clk-post = <14>;
 		qcom,mdss-dsi-t-clk-pre = <49>;
-		qcom,panel-supply-entries = <4>;
+		qcom,panel-supply-entries = <&dsi_panel_pwr_supply_vdd_no_labibb>;
 		qcom,mdss-dsi-mode-sel-gpio-state = "single_port";
-		qcom,platform-reset-gpio = <&tlmm 8 0>;
+		qcom,platform-reset-gpio = <&pm8998_gpios 8 0>;
 		qcom,platform-te-gpio = <&tlmm 10 0>;
 		qcom,platform-err-fg-gpio = <&tlmm 12 0>;
 
@@ -183,7 +189,7 @@
 				qcom,mdss-dsi-doze-s2-command-state = "dsi_lp_mode";
 				qcom,mdss-dsi-doze-s2-1-command-state = "dsi_lp_mode";
 				qcom,mdss-dsi-doze-s2-2-command-state = "dsi_lp_mode";
-//				qcom,mdss-dsi-on-command = [];
+				qcom,mdss-dsi-on-command = [];
 				qcom,mdss-dsi-off-command = [
 					05 01 00 00 00 00 02 28 00
 					05 01 00 00 78 00 02 10 00

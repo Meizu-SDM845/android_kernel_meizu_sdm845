@@ -1,3 +1,9 @@
+/*
+ * Copyright (C) 2023 transaero21 <transaero21@elseboot.ru>
+ *
+ * SPDX-License-Identifier: GPL-2.0
+ */
+
 &mdss_mdp {
 	s6e3fa6_amoled_fhd_cmd: qcom,mdss_dsi_s6e3fa6_amoled_fhd_cmd {
 		qcom,mdss-dsi-panel-name = "s6e3fa6 amoled fhd cmd mode dsi panel";
@@ -33,7 +39,7 @@
 		qcom,mdss-dsi-reset-sequence = <0 10 1 10>;
 		qcom,mdss-dsi-t-clk-post = <14>;
 		qcom,mdss-dsi-t-clk-pre = <49>;
-		qcom,panel-supply-entries = <4>;
+		qcom,panel-supply-entries = <&dsi_panel_pwr_supply_vdd_no_labibb>;
 		qcom,mdss-dsi-mode-sel-gpio-state = "single_port";
 		qcom,platform-reset-gpio = <&tlmm 6 0>;
 		qcom,platform-te-gpio = <&tlmm 10 0>;
