@@ -129,6 +129,12 @@
 		vdda18-supply = <&pm8998_l12>;
 		vdda33-supply = <&pm8998_l24>;
 		qcom,vdd-voltage-level = <0 880000 880000>;
+
+		pinctrl-names = "atest_usb13_suspend",
+			"atest_usb13_active";
+		pinctrl-0 = <&atest_usb13_oe_suspend &atest_usb13_suspend>;
+        pinctrl-1 = <&atest_usb13_oe_active &atest_usb13_active>;
+
 		qcom,qusb-phy-reg-offset =
 			<0x240 /* QUSB2PHY_PORT_TUNE1 */
 			 0x1a0 /* QUSB2PHY_PLL_COMMON_STATUS_ONE */

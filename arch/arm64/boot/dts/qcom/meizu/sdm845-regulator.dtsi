@@ -432,7 +432,7 @@
 			regulator-min-microvolt = <1800000>;
 			regulator-max-microvolt = <1880000>;
 			qcom,init-voltage = <1800000>;
-			qcom,init-mode = <RPMH_REGULATOR_MODE_LDO_LPM>;
+			qcom,init-mode = <RPMH_REGULATOR_MODE_SMPS_PFM>;
 		};
 	};
 
@@ -557,9 +557,10 @@
 			regulator-name = "pm8998_l21";
 			qcom,set = <RPMH_REGULATOR_SET_ALL>;
 			regulator-min-microvolt = <2704000>;
-			regulator-max-microvolt = <2960000>;
-			qcom,init-voltage = <2704000>;
+			regulator-max-microvolt = <0x357780>;
+			qcom,init-voltage = <0x34bc00>;
 			qcom,init-mode = <RPMH_REGULATOR_MODE_LDO_LPM>;
+			status = "disabled";
 		};
 	};
 
@@ -576,8 +577,9 @@
 			qcom,set = <RPMH_REGULATOR_SET_ALL>;
 			regulator-min-microvolt = <2864000>;
 			regulator-max-microvolt = <3312000>;
-			qcom,init-voltage = <2864000>;
-			qcom,init-mode = <RPMH_REGULATOR_MODE_LDO_LPM>;
+			qcom,init-voltage = <0x328980>;
+			qcom,init-mode = <RPMH_REGULATOR_MODE_SMPS_PWM>;
+			#qcom,init-enable = <0x00>;
 		};
 	};
 
@@ -684,7 +686,7 @@
 			regulator-min-microvolt = <2856000>;
 			regulator-max-microvolt = <3008000>;
 			qcom,init-voltage = <2856000>;
-			qcom,init-mode = <RPMH_REGULATOR_MODE_LDO_LPM>;
+			qcom,init-mode = <RPMH_REGULATOR_MODE_SMPS_PWM>;
 		};
 	};
 
