@@ -106,11 +106,7 @@
 #define Y_AXIS_MIN                          0
 
 #define PRESSURE_MIN                        0
-#ifdef CONFIG_INPUT_PRESS_NDT
-#define PRESSURE_MAX                        2048
-#else
 #define PRESSURE_MAX                        127
-#endif
 
 #define DISTANCE_MIN						0
 #define DISTANCE_MAX						127
@@ -196,19 +192,6 @@ struct fts_hw_platform_data {
 #endif
 	unsigned long keystates;
 	bool check_display_name;
-#ifdef CONFIG_TOUCHSCREEN_XIAOMI_TOUCHFEATURE_GAMEMODE
-	u32 touch_up_threshold_min;
-	u32 touch_up_threshold_max;
-	u32 touch_up_threshold_def;
-	u32 touch_tolerance_min;
-	u32 touch_tolerance_max;
-	u32 touch_tolerance_def;
-	u32 edgefilter_leftright_def;
-	u32 edgefilter_topbottom_def;
-	u32 edgefilter_area_step1;
-	u32 edgefilter_area_step2;
-	u32 edgefilter_area_step3;
-#endif
 };
 
 /*
@@ -359,17 +342,6 @@ struct fts_ts_info {
 	atomic_t system_is_resetting;
 	unsigned int fod_status;
 	bool irq_status;
-#ifdef CONFIG_TOUCHSCREEN_XIAOMI_TOUCHFEATURE
-#ifdef CONFIG_TOUCHSCREEN_XIAOMI_TOUCHFEATURE_SENSOR
-	bool p_sensor_switch;
-	bool p_sensor_changed;
-
-	int palm_sensor_switch;
-	bool palm_sensor_changed;
-#endif
-#ifdef CONFIG_TOUCHSCREEN_XIAOMI_TOUCHFEATURE_GAMEMODE
-	wait_queue_head_t wait_queue;
-#endif
 #endif
 	bool dev_pm_suspend;
 	struct completion dev_pm_suspend_completion;
@@ -387,13 +359,6 @@ extern int input_unregister_notifier_client(struct notifier_block *nb);
 
 extern int fts_proc_init(void);
 extern int fts_proc_remove(void);
-#ifdef CONFIG_INPUT_PRESS_NDT
-#define CENTER_X 540
-#define CENTER_Y 1727
-#define CIRCLE_R 148
-bool fts_is_infod(void);
-void fts_get_pointer(int *touch_flag, int *x, int *y);
-#endif
 void fts_restore_regvalues(void);
 
 #endif
