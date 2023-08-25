@@ -62,9 +62,9 @@
 
 		hall_sensor {
 			label = "hall_sensor";
-			gpios = <&tlmm 0x7c GPIO_ACTIVE_LOW>;
+			gpios = <&tlmm 124 GPIO_ACTIVE_LOW>;
 			linux,input-type = <1>;
-			linux,code = <0x19>;
+			linux,code = <25>;
 			gpio-key,wakeup;
 			debounce-interval = <15>;
 			linux,can-disable;
@@ -596,7 +596,7 @@
 &qupv3_se5_i2c {
 	status = "ok";
 
-	nq@49 { 
+	nq@49 {
 		compatible = "st,fts";
 		reg = <0x49>;
 		interrupt-parent = <&tlmm>;
@@ -609,7 +609,7 @@
 		st,reset-gpio = <&tlmm 0x7e 0x00>;
 		pinctrl-names = "tp_int";
 		pinctrl-0 = <&tp_pins_tp_eint_as_int>;
-	}; 
+	};
 };
 
 &soc {
