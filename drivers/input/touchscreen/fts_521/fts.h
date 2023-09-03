@@ -61,8 +61,8 @@
 #define FW_H_FILE
 /* #define FW_UPDATE_ON_PROBE */
 #ifdef FW_H_FILE
-#define FW_SIZE_NAME myArray_size
-#define FW_ARRAY_NAME myArray
+#define FW_SIZE_NAME m1882_firmware_size
+#define FW_ARRAY_NAME m1882_firmware_array
 #endif
 
 /*#define LIMITS_H_FILE*/
