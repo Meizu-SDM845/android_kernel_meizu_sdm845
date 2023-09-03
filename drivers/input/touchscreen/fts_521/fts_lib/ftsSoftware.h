@@ -76,7 +76,6 @@ typedef enum {
 */
 #define FTS_CMD_SYSTEM						0xA4	/*OP code to write s system command*/
 
-#define FTS_CMD_LOCKDOWN_ID				0x70
 #define FTS_CMD_CUSTOM			0xC0
 /** @} */
 

@@ -47,12 +47,9 @@
 /**** CODE CONFIGURATION ****/
 #define FTS_TS_DRV_NAME                     "fts"			/*driver name*/
 #define FTS_TS_DRV_VERSION                  "5.2.4"			/*driver version string format*/
-#define FTS_TS_DRV_VER						0x05020400		/*driver version u32 format*/
+#define FTS_TS_DRV_VER			    0x05020400			/*driver version u32 format*/
 
-#define PINCTRL_STATE_ACTIVE		"pmx_ts_active"
-#define PINCTRL_STATE_SUSPEND		"pmx_ts_suspend"
-#define PINCTRL_STATE_RELEASE		"pmx_ts_release"
-
+#define PINCTRL_STATE		"tp_int"
 
 #define DRIVER_TEST
 
@@ -90,31 +87,27 @@
 
 #define CHARGER_MODE
 
-#define GLOVE_MODE
-
-#define COVER_MODE
-
-#define STYLUS_MODE
+#define GRIP_MODE
 
 
 /**** END ****/
 
 /**** PANEL SPECIFICATION ****/
-#define X_AXIS_MAX                          1079
+#define X_AXIS_MAX                          1080
 #define X_AXIS_MIN                          0
-#define Y_AXIS_MAX                          2247
+#define Y_AXIS_MAX                          2160
 #define Y_AXIS_MIN                          0
 
 #define PRESSURE_MIN                        0
 #define PRESSURE_MAX                        127
 
-#define DISTANCE_MIN						0
-#define DISTANCE_MAX						127
+#define DISTANCE_MIN                        0
+#define DISTANCE_MAX                        127
 
 #define TOUCH_ID_MAX                        10
 
-#define AREA_MIN                            PRESSURE_MIN
-#define AREA_MAX                            PRESSURE_MAX
+#define AREA_MIN                            63
+#define AREA_MAX                            63
 /**** END ****/
 /**@}*/
 /*********************************************************/
@@ -145,53 +138,26 @@ do {\
 
 #define TSP_BUF_SIZE						PAGE_SIZE
 
-#define CONFIG_FTS_TOUCH_COUNT_DUMP
-
-#ifdef CONFIG_FTS_TOUCH_COUNT_DUMP
-#define TOUCH_COUNT_FILE_MAXSIZE 50
-#endif
-
 /**
  * Struct which contains information about the HW platform and set up
  */
-#define FTS_LOCKDOWN_SIZE 8
 #define FTS_RESULT_INVALID 0
 #define FTS_RESULT_PASS 2
 #define FTS_RESULT_FAIL 1
-
-struct fts_config_info {
-	u8 tp_vendor;
-	u8 tp_color;
-	u8 tp_hw_version;
-	const char *fts_cfg_name;
-	const char *fts_limit_name;
-#ifdef CONFIG_FTS_TOUCH_COUNT_DUMP
-		const char *clicknum_file_name;
-#endif
-};
 
 struct fts_hw_platform_data {
 	int (*power) (bool on);
 	int irq_gpio;
 	int reset_gpio;
 	unsigned long irq_flags;
-	unsigned int x_max;
-	unsigned int y_max;
 	const char *vdd_reg_name;
 	const char *avdd_reg_name;
-	const char *default_fw_name;
-	size_t config_array_size;
-	struct fts_config_info *config_array;
-	int current_index;
 #ifdef PHONE_KEY
 	size_t nbuttons;
 	int *key_code;
 #endif
-#ifdef CONFIG_FTS_TOUCH_COUNT_DUMP
-	bool dump_click_count;
-#endif
-	unsigned long keystates;
-	bool check_display_name;
+	struct pinctrl *pinctrl; // new
+	struct pinctrl_state *pinctrl_state; // new
 };
 
 /*
@@ -207,12 +173,6 @@ typedef void (*event_dispatch_handler_t)
  (struct fts_ts_info *info, unsigned char *data);
 
 #ifdef CONFIG_SECURE_TOUCH
-/*
-struct fts_secure_delay {
-	bool palm_pending;
-	int palm_value;
-};
-*/
 
 struct fts_secure_info {
 	bool secure_inited;
@@ -221,8 +181,6 @@ struct fts_secure_info {
 	atomic_t st_pending_irqs;
 	struct completion st_irq_processed;
 	struct completion st_powerdown;
-//	struct fts_secure_delay scr_delay;
-//	struct mutex palm_lock;
 	void *fts_info;
 };
 #endif
@@ -256,7 +214,7 @@ struct fts_dma_buf {
  * - fwupdate_stat   Store the result of a fw update triggered by the host \n
  * - notifier        Used for be notified from a suspend/resume event \n
  * - sensor_sleep    true suspend was called, false resume was called \n
- * - wakelock        Wake Lock struct \n
+ * - wakesrc         Wakeup Source struct \n
  * - input_report_mutex  mutex for handling the pressure of keys \n
  * - series_of_switches  to store the enabling status of a particular feature from the host \n
  */
@@ -272,14 +230,18 @@ struct fts_ts_info {
 	struct work_struct work;
 	struct work_struct suspend_work;
 	struct work_struct resume_work;
-	struct work_struct cmd_update_work;
 	struct workqueue_struct *event_wq;
-	struct workqueue_struct *touch_feature_wq;
 
 #ifndef FW_UPDATE_ON_PROBE
 	struct delayed_work fwu_work;
 	struct workqueue_struct *fwu_workqueue;
 #endif
+
+	// TODO: Implement FOD handling
+	struct delayed_work fod_work;
+	struct workqueue_struct *fod_workqueue;
+	int fod_status;
+
 	event_dispatch_handler_t *event_dispatch_table;
 
 	struct attribute_group attrs;
@@ -297,54 +259,26 @@ struct fts_ts_info {
 	int fwupdate_stat;
 
 	struct notifier_block notifier;
-	struct notifier_block bl_notifier;
 	bool sensor_sleep;
-	struct pinctrl *ts_pinctrl;
-	struct pinctrl_state *pinctrl_state_active;
-	struct pinctrl_state *pinctrl_state_suspend;
-	u8 lockdown_info[FTS_LOCKDOWN_SIZE];
-	int result_type;
-	struct proc_dir_entry *tp_selftest_proc;
-	struct proc_dir_entry *tp_data_dump_proc;
-	struct proc_dir_entry *tp_fw_version_proc;
-	struct proc_dir_entry *tp_lockdown_info_proc;
+
+	struct wakeup_source *wakesrc; // new
 
 	/* input lock */
 	struct mutex input_report_mutex;
-	struct mutex cmd_update_mutex;
+
 	int gesture_enabled;
 	int glove_enabled;
 	int charger_enabled;
 	int stylus_enabled;
 	int cover_enabled;
-	unsigned int grip_enabled;
-	unsigned int grip_pixel;
-	unsigned int doze_time;
-	unsigned int grip_pixel_def;
-	unsigned int doze_time_def;
-#ifdef CONFIG_TOUCHSCREEN_ST_DEBUG_FS
-	struct dentry *debugfs;
-#endif
-	int dbclick_count;
-#ifdef CONFIG_FTS_TOUCH_COUNT_DUMP
-	struct class *fts_tp_class;
-	struct device *fts_touch_dev;
-	char *current_clicknum_file;
-#endif
+	int grip_enabled;
+	
 #ifdef CONFIG_SECURE_TOUCH
 	struct fts_secure_info *secure_info;
 #endif
 #ifdef CONFIG_I2C_BY_DMA
 	struct fts_dma_buf *dma_buf;
 #endif
-	bool lockdown_is_ok;
-	struct completion tp_reset_completion;
-	atomic_t system_is_resetting;
-	unsigned int fod_status;
-	bool irq_status;
-#endif
-	bool dev_pm_suspend;
-	struct completion dev_pm_suspend_completion;
 };
 
 struct fts_mode_switch {

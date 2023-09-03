@@ -294,6 +294,7 @@ int fts_write(u8 *cmd, int cmdLength)
 	return OK;
 }
 
+
 #ifdef CONFIG_I2C_BY_DMA
 /**
  * same as above but can be used when enable DMA.

@@ -115,12 +115,6 @@
 #define ERROR_PROD_TEST_ITO				((int)0x83000000)			/*production ito test failed*/
 #define ERROR_PROD_TEST_INITIALIZATION	((int)0x84000000)			/*production initialization test failed*/
 #define ERROR_GET_INIT_STATUS			((int)0x85000000)			/*mismatch of the MS or SS tuning_version*/
-#define ERROR_LOCKDOWN_CODE				((int)0x80001600)			/*unable to write/rewrite/read lockdown code in the IC*/
-
-#define EVT_TYPE_ERROR_LOCKDOWN_FLASH		0x30	    		/*FW shall not proceed with any flash write/read*/
-#define EVT_TYPE_ERROR_LOCKDOWN_CRC			0x31	    		/*FW shall discard the record and do not write to flash*/
-#define EVT_TYPE_ERROR_LOCKDOWN_NO_DATA		0x32	    		/*No data of this type exisitng in flash*/
-#define EVT_TYPE_ERROR_LOCKDOWN_WRITE_FULL	0x33	    		/*FW shall not write this new record to flash*/
 /** @}*/
 
 /**
