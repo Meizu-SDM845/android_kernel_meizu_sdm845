@@ -5,6 +5,7 @@
  *
  * Copyright (C) 2016, STMicroelectronics Limited.
  * Copyright (C) 2019 XiaoMi, Inc.
+ * Copyright (C) 2023 transaero21 <transaero21@elseboot.ru>
  * Authors: AMG(Analog Mems Group)
  *
  * 		marco.cali@st.com
@@ -25,9 +26,9 @@
  */
 
 /*!
-* \file fts.c
-* \brief It is the main file which contains all the most important functions generally used by a device driver the driver
-*/
+ * \file fts.c
+ * \brief It is the main file which contains all the most important functions generally used by a device driver the driver
+ */
 #include <linux/device.h>
 
 #include <linux/init.h>
@@ -44,11 +45,6 @@
 #include <linux/i2c-dev.h>
 #include <linux/spi/spi.h>
 #include <linux/completion.h>
-#ifdef CONFIG_SECURE_TOUCH
-#include <linux/atomic.h>
-#include <linux/sysfs.h>
-#include <linux/hardirq.h>
-#endif
 
 #include <linux/gpio.h>
 #include <linux/of_gpio.h>
@@ -60,11 +56,6 @@
 #endif
 #include <linux/backlight.h>
 
-
-#include <linux/fb.h>
-#include <linux/proc_fs.h>
-#include <linux/uaccess.h>
-#include <linux/debugfs.h>
 #ifdef KERNEL_ABOVE_2_6_38
 #include <linux/input/mt.h>
 #endif
@@ -130,15 +121,13 @@ struct fts_ts_info *fts_info;
 static int fts_init_sensing(struct fts_ts_info *info);
 static int fts_mode_handler(struct fts_ts_info *info, int force);
 static int fts_chip_initialization(struct fts_ts_info *info, int init_type);
-extern const char *dsi_get_display_name(void);
 
 static void fts_event_handler(struct work_struct *work);
-bool wait_queue_complete;
-
 
 /**
 * Release all the touches in the linux input subsystem
-* @param info pointer to fts_ts_info which contains info about the device and its hw setup
+* @param info pointer to fts_ts_info which contains info about the device and
+* its hw setup
 */
 void release_all_touches(struct fts_ts_info *info)
 {
@@ -1580,190 +1569,6 @@ END:
 	return count;
 }
 
-#ifdef CONFIG_SECURE_TOUCH
-static void fts_secure_touch_notify(struct fts_ts_info *info)
-{
-	/*might sleep*/
-	sysfs_notify(&info->dev->kobj, NULL, "secure_touch");
-	logError(1, "%s %s SECURE_NOTIFY:notify secure_touch\n", tag, __func__);
-}
-
-static int fts_secure_stop(struct fts_ts_info *info, bool block)
-{
-	struct fts_secure_info *scr_info = info->secure_info;
-
-	logError(1, "%s %s SECURE_STOP: block = %d\n", tag, __func__, (int)block);
-	if (atomic_read(&scr_info->st_enabled) == 0) {
-		logError(1, "%s %s secure touch is already disabled\n", tag, __func__);
-		return OK;
-	}
-
-	atomic_set(&scr_info->st_pending_irqs, -1);
-	fts_secure_touch_notify(info);
-	if (block) {
-		if (wait_for_completion_interruptible(&scr_info->st_powerdown) == -ERESTARTSYS) {
-			logError(1, "%s %s SECURE_STOP:st_powerdown be interrupted\n",
-				tag, __func__);
-		} else {
-			logError(1, "%s %s SECURE_STOP:st_powerdown be completed\n", tag, __func__);
-		}
-	}
-	return OK;
-}
-
-static void fts_secure_work(struct fts_secure_info *scr_info)
-{
-	struct fts_ts_info *info = (struct fts_ts_info *)scr_info->fts_info;
-
-
-	fts_secure_touch_notify(info);
-	atomic_set(&scr_info->st_1st_complete, 1);
-	if (wait_for_completion_interruptible(&scr_info->st_irq_processed) == -ERESTARTSYS) {
-		logError(1, "%s %s SECURE_FILTER:st_irq_processed be interrupted\n", tag, __func__);
-	} else {
-		logError(1, "%s %s SECURE_FILTER:st_irq_processed be completed\n", tag, __func__);
-	}
-
-	fts_enableInterrupt();
-	logError(1, "%s %s SECURE_FILTER:enable irq\n", tag, __func__);
-}
-
-static int fts_secure_filter_interrupt(struct fts_ts_info *info)
-{
-	struct fts_secure_info *scr_info = info->secure_info;
-
-	/*inited and enable first*/
-	if (!scr_info->secure_inited || atomic_read(&scr_info->st_enabled) == 0) {
-		return -EPERM;
-	}
-
-	fts_disableInterruptNoSync();
-	logError(1, "%s %s SECURE_FILTER:disable irq\n", tag, __func__);
-	/*check and change irq pending state
-	 *change irq pending here, secure_touch_show, secure_touch_enable_store
-	 *completion st_irq_processed at secure_touch_show, secure_touch_enable_stroe
-	 */
-	logError(1, "%s %s SECURE_FILTER:st_pending_irqs = %d\n",
-		tag, __func__, atomic_read(&scr_info->st_pending_irqs));
-	if (atomic_cmpxchg(&scr_info->st_pending_irqs, 0, 1) == 0) {
-		fts_secure_work(scr_info);
-		logError(1, "%s %s SECURE_FILTER:secure_work return\n", tag, __func__);
-	}
-
-	return 0;
-}
-
-static ssize_t fts_secure_touch_enable_show (struct device *dev,
-										struct device_attribute *attr, char *buf)
-{
-	struct fts_ts_info *info = dev_get_drvdata(dev);
-	struct fts_secure_info *scr_info = info->secure_info;
-
-	logError(1, "%s %s SECURE_TOUCH_ENABLE[R]:st_enabled = %d\n", tag, __func__, atomic_read(&scr_info->st_enabled));
-	return scnprintf(buf, PAGE_SIZE, "%d", atomic_read(&scr_info->st_enabled));
-}
-
-/* 	echo 0 > secure_touch_enable to disable secure touch
- * 	echo 1 > secure_touch_enable to enable secure touch
- */
-static ssize_t fts_secure_touch_enable_store (struct device *dev, struct device_attribute *attr,
-				const char *buf, size_t count)
-{
-	int ret;
-	unsigned long value;
-	struct fts_ts_info *info = dev_get_drvdata(dev);
-	struct fts_secure_info *scr_info = info->secure_info;
-
-	atomic_set(&scr_info->st_1st_complete, 0);
-	logError(1, "%s %s SECURE_TOUCH_ENABLE[W]:st_1st_complete=0\n", tag, __func__);
-	logError(1, "%s %s SECURE_TOUCH_ENABLE[W]:parse parameter\n", tag, __func__);
-	/*check and get cmd*/
-	if (count > 2)
-		return -EINVAL;
-	ret = kstrtoul(buf, 10, &value);
-	if (ret != 0)
-		return ret;
-
-	if (!scr_info->secure_inited)
-		return -EIO;
-
-	ret = count;
-
-	logError(1, "%s %s SECURE_TOUCH_ENABLE[W]:st_enabled = %d\n", tag, __func__, value);
-	switch (value) {
-	case 0:
-		if (atomic_read(&scr_info->st_enabled) == 0) {
-			logError(1, "%s %s secure touch is already disabled\n",
-				tag, __func__);
-			return ret;
-		}
-//		mutex_lock(&scr_info->palm_lock);
-		atomic_set(&scr_info->st_enabled, 0);
-		fts_secure_touch_notify(info);
-		complete(&scr_info->st_irq_processed);
-		fts_event_handler(info);
-		complete(&scr_info->st_powerdown);
-//		fts_flush_delay_task(scr_info);
-//		mutex_unlock(&scr_info->palm_lock);
-		logError(1, "%s %s SECURE_TOUCH_ENABLE[W]:disable secure touch successful\n",
-			tag, __func__);
-	break;
-	case 1:
-		if (atomic_read(&scr_info->st_enabled) == 1) {
-			logError(1, "%s %s secure touch is already enabled\n",
-				tag, __func__);
-			return ret;
-		}
-//		mutex_lock(&scr_info->palm_lock);
-		/*wait until finish process all normal irq*/
-		synchronize_irq(info->client->irq);
-
-		/*enable secure touch*/
-		reinit_completion(&scr_info->st_powerdown);
-		reinit_completion(&scr_info->st_irq_processed);
-		atomic_set(&scr_info->st_pending_irqs, 0);
-		atomic_set(&scr_info->st_enabled, 1);
-//		mutex_unlock(&scr_info->palm_lock);
-		logError(1, "%s %s SECURE_TOUCH_ENABLE[W]:enable secure touch successful\n",
-			tag, __func__);
-	break;
-	default:
-		logError(1, "%s %s %d in secure_touch_enable is not support\n",
-			tag, __func__, value);
-	break;
-	}
-	return ret;
-}
-
-static ssize_t fts_secure_touch_show (struct device *dev, struct device_attribute *attr, char *buf)
-{
-	struct fts_ts_info *info = dev_get_drvdata(dev);
-	struct fts_secure_info *scr_info = info->secure_info;
-	int value = 0;
-
-	logError(1, "%s %s SECURE_TOUCH[R]:st_1st_complete = %d\n",
-		tag, __func__, atomic_read(&scr_info->st_1st_complete));
-	logError(1, "%s %s SECURE_TOUCH[R]:st_pending_irqs = %d\n",
-		tag, __func__, atomic_read(&scr_info->st_pending_irqs));
-
-	if (atomic_read(&scr_info->st_enabled) == 0) {
-		return -EBADF;
-	}
-
-	if (atomic_cmpxchg(&scr_info->st_pending_irqs, -1, 0) == -1)
-		return -EINVAL;
-
-	if (atomic_cmpxchg(&scr_info->st_pending_irqs, 1, 0) == 1) {
-		value = 1;
-	} else if (atomic_cmpxchg(&scr_info->st_1st_complete, 1, 0) == 1) {
-		complete(&scr_info->st_irq_processed);
-		logError(1, "%s %s SECURE_TOUCH[R]:comlpetion st_irq_processed\n", tag, __func__);
-	}
-	return scnprintf(buf, PAGE_SIZE, "%d", value);
-}
-#endif
-
-
 static DEVICE_ATTR(fwupdate, (S_IRUGO | S_IWUSR | S_IWGRP), fts_fwupdate_show,
 		   fts_fwupdate_store);
 static DEVICE_ATTR(appid, (S_IRUGO), fts_appid_show, NULL);
@@ -1844,12 +1649,6 @@ static struct attribute *fts_attr_group[] = {
 	NULL,
 };
 
-#ifdef CONFIG_SECURE_TOUCH
-DEVICE_ATTR(secure_touch_enable, (S_IRUGO | S_IWUSR | S_IWGRP), fts_secure_touch_enable_show,  fts_secure_touch_enable_store);
-DEVICE_ATTR(secure_touch, (S_IRUGO | S_IWUSR | S_IWGRP), fts_secure_touch_show,  NULL);
-#endif
-/**@}*/
-/**@}*/
 
 /**
  * @defgroup isr Interrupt Service Routine (Event Handler)
@@ -2519,12 +2318,6 @@ static void fts_event_handler(struct work_struct *work)
 	unsigned char eventId;
 	event_dispatch_handler_t event_handler;
 
-#ifdef CONFIG_SECURE_TOUCH
-	if (!fts_secure_filter_interrupt(info)) {
-		return;
-	}
-#endif
-
 	info = container_of(work, struct fts_ts_info, work);
 	__pm_wakeup_event(info->wakesrc, jiffies_to_msecs(HZ));
 
@@ -2729,8 +2522,8 @@ static irqreturn_t fts_interrupt_handler(int irq, void *handle)
 }
 
 /**
-*	Initialize the dispatch table with the event handlers for any possible event ID and the interrupt routine behavior (triggered when the IRQ pin is low and associating the top half interrupt handler function).
-*	@see fts_interrupt_handler()
+* Initialize the dispatch table with the event handlers for any possible event ID and the interrupt routine behavior (triggered when the IRQ pin is low and associating the top half interrupt handler function).
+* @see fts_interrupt_handler()
 */
 static int fts_interrupt_install(struct fts_ts_info *info)
 {
@@ -2769,8 +2562,8 @@ static int fts_interrupt_install(struct fts_ts_info *info)
 }
 
 /**
-*	Clean the dispatch table and the free the IRQ.
-*	This function is called when the driver need to be removed
+* Clean the dispatch table and the free the IRQ.
+* This function is called when the driver need to be removed
 */
 static void fts_interrupt_uninstall(struct fts_ts_info *info)
 {
@@ -2782,8 +2575,6 @@ static void fts_interrupt_uninstall(struct fts_ts_info *info)
 	free_irq(info->client->irq, info);
 
 }
-
-/**@}*/
 
 /**
 * This function try to attempt to communicate with the IC for the first time during the boot up process in order to acquire the necessary info for the following stages.
@@ -3094,10 +2885,6 @@ static void fts_resume_work(struct work_struct *work)
 
 	__pm_wakeup_event(info->wakesrc, jiffies_to_msecs(HZ));
 
-#ifdef CONFIG_SECURE_TOUCH
-	fts_secure_stop(info, true);
-#endif
-
 	info->resume_bit = 1;
 	fts_system_reset();
 	release_all_touches(info);
@@ -3118,10 +2905,6 @@ static void fts_suspend_work(struct work_struct *work)
 
 	__pm_wakeup_event(info->wakesrc, jiffies_to_msecs(HZ));
 
-#ifdef CONFIG_SECURE_TOUCH
-	fts_secure_stop(info, true);
-#endif
-
 	info->resume_bit = 0;
 	fts_mode_handler(info, 0);
 
@@ -3131,7 +2914,6 @@ static void fts_suspend_work(struct work_struct *work)
 }
 
 #ifdef CONFIG_DRM_MSM
-/**@}*/
 
 /**
  * Callback function used to detect the suspend/resume events generated by clicking the power button.
@@ -3281,7 +3063,7 @@ exit:
  * @param config if true, the gpio is set up otherwise it is free
  * @param dir direction of the gpio, 0 = in, 1 = out
  * @param state initial value (if the direction is in, this parameter is ignored)
- * return error code
+ * @return error code
  */
 static int fts_gpio_setup(int gpio, bool config, int dir, int state)
 {
@@ -3435,63 +3217,6 @@ static int parse_dt(struct device *dev, struct fts_hw_platform_data *bdata)
 
 	return OK;
 }
-
-#ifdef CONFIG_SECURE_TOUCH
-int fts_secure_init(struct fts_ts_info *info)
-{
-	int ret;
-	struct fts_secure_info *scr_info = kmalloc(sizeof(*scr_info), GFP_KERNEL);
-	if (!scr_info) {
-		logError(1, "%s %s alloc fts_secure_info failed\n", tag, __func__);
-		return -ENOMEM;
-	}
-
-	logError(1, "%s fts_secure_init\n", tag);
-
-//	mutex_init(&scr_info->palm_lock);
-
-	init_completion(&scr_info->st_powerdown);
-	init_completion(&scr_info->st_irq_processed);
-
-	atomic_set(&scr_info->st_enabled, 0);
-	atomic_set(&scr_info->st_pending_irqs, 0);
-
-	info->secure_info = scr_info;
-
-	ret = sysfs_create_file(&info->dev->kobj, &dev_attr_secure_touch_enable.attr);
-	if (ret < 0) {
-		logError(1, "%s %s create sysfs attribute secure_touch_enable failed\n", tag, __func__);
-		goto err;
-	}
-
-	ret = sysfs_create_file(&info->dev->kobj, &dev_attr_secure_touch.attr);
-	if (ret < 0) {
-		logError(1, "%s %s create sysfs attribute secure_touch failed\n", tag, __func__);
-		goto err;
-	}
-
-	scr_info->fts_info = info;
-	scr_info->secure_inited = true;
-
-	return 0;
-
-err:
-	kfree(scr_info);
-	info->secure_info = NULL;
-	return ret;
-}
-
-void fts_secure_remove(struct fts_ts_info *info)
-{
-	struct fts_secure_info *scr_info = info->secure_info;
-
-	sysfs_remove_file(&info->dev->kobj, &dev_attr_secure_touch_enable.attr);
-	sysfs_remove_file(&info->dev->kobj, &dev_attr_secure_touch.attr);
-	kfree(scr_info);
-}
-
-#endif
-
 
 /**
  * Probe function, called when the driver it is matched with a device with the same name compatible name
@@ -3744,17 +3469,6 @@ static int fts_probe(struct spi_device *client)
 		goto ProbeErrorExit_6;
 	}
 
-#ifdef CONFIG_SECURE_TOUCH
-	logError(1, "%s %s create secure touch file...\n", tag, __func__);
-	error = fts_secure_init(info);
-	if (error < 0) {
-		logError(1, "%s %s init secure touch failed\n", tag, __func__);
-		goto ProbeErrorExit_7;
-	}
-	logError(1, "%s %s create secure touch file successful\n", tag, __func__);
-	fts_secure_stop(info, 1);
-#endif
-
 #ifdef CONFIG_I2C_BY_DMA
 	/*dma buf init*/
 	info->dma_buf = (struct fts_dma_buf *)kzalloc(sizeof(*info->dma_buf), GFP_KERNEL);
@@ -3822,9 +3536,6 @@ static int fts_probe(struct spi_device *client)
 	return OK;
 
 ProbeErrorExit_7:
-#ifdef CONFIG_SECURE_TOUCH
-		fts_secure_remove(info);
-#endif
 #ifdef CONFIG_I2C_BY_DMA
 	if (info->dma_buf)
 		kfree(info->dma_buf);
@@ -3899,9 +3610,6 @@ static int fts_remove(struct spi_device *client)
 	fts_enable_reg(info, false);
 	fts_get_reg(info, false);
 	fts_info = NULL;
-#ifdef CONFIG_SECURE_TOUCH
-	fts_secure_remove(info);
-#endif
 	/* free all */
 	kfree(info);
 

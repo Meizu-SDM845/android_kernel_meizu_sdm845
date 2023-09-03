@@ -5,6 +5,7 @@
  *
  * Copyright (C) 2017, STMicroelectronics
  * Copyright (C) 2019 XiaoMi, Inc.
+ * Copyright (C) 2023 transaero21 <transaero21@elseboot.ru>
  * Authors: AMG(Analog Mems Group)
  *
  * 		marco.cali@st.com
@@ -45,9 +46,9 @@
 * @{
 */
 /**** CODE CONFIGURATION ****/
-#define FTS_TS_DRV_NAME                     "fts"			/*driver name*/
-#define FTS_TS_DRV_VERSION                  "5.2.4"			/*driver version string format*/
-#define FTS_TS_DRV_VER			    0x05020400			/*driver version u32 format*/
+#define FTS_TS_DRV_NAME		"fts"		/* driver name */
+#define FTS_TS_DRV_VERSION	"5.2.4"		/* driver version string format */
+#define FTS_TS_DRV_VER		0x05020400	/* driver version u32 format */
 
 #define PINCTRL_STATE		"tp_int"
 
@@ -71,7 +72,7 @@
 /*#define USE_ONE_FILE_NODE*/
 
 #ifndef FW_UPDATE_ON_PROBE
-#define EXP_FN_WORK_DELAY_MS				1000
+#define EXP_FN_WORK_DELAY_MS	1000
 #endif
 
 /**** END ****/
@@ -123,28 +124,21 @@
 * The meaning of the the LSB of the bitmask must be interpreted considering that the value defined in @link feat_opt Feature Selection Option @endlink correspond to the position of the corresponding bit in the mask
 * @{
 */
-#define MODE_NOTHING						0x00000000
-#define MODE_ACTIVE(_mask, _sett)\
-do {\
-	_mask |= (SCAN_MODE_ACTIVE << 24)|(_sett << 16);\
-} while (0)
-#define MODE_LOW_POWER(_mask, _sett)\
-do {\
-	_mask |= (SCAN_MODE_LOW_POWER << 24)|(_sett << 16);\
-} while (0)
+#define MODE_NOTHING			0x00000000
+#define MODE_ACTIVE(_mask, _sett)	(_mask |= (SCAN_MODE_ACTIVE << 24) | \
+					(_sett << 16))
+#define MODE_LOW_POWER(_mask, _sett)	(_mask |= (SCAN_MODE_LOW_POWER << 24) | \
+					(_sett << 16))
+
 /** @}*/
 
-#define CMD_STR_LEN							32
+#define CMD_STR_LEN	32
 
-#define TSP_BUF_SIZE						PAGE_SIZE
+#define TSP_BUF_SIZE	PAGE_SIZE
 
 /**
  * Struct which contains information about the HW platform and set up
  */
-#define FTS_RESULT_INVALID 0
-#define FTS_RESULT_PASS 2
-#define FTS_RESULT_FAIL 1
-
 struct fts_hw_platform_data {
 	int (*power) (bool on);
 	int irq_gpio;
@@ -156,8 +150,8 @@ struct fts_hw_platform_data {
 	size_t nbuttons;
 	int *key_code;
 #endif
-	struct pinctrl *pinctrl; // new
-	struct pinctrl_state *pinctrl_state; // new
+	struct pinctrl *pinctrl;
+	struct pinctrl_state *pinctrl_state;
 };
 
 /*
@@ -170,20 +164,7 @@ extern char tag[8];
  * Dispatch event handler
  */
 typedef void (*event_dispatch_handler_t)
- (struct fts_ts_info *info, unsigned char *data);
-
-#ifdef CONFIG_SECURE_TOUCH
-
-struct fts_secure_info {
-	bool secure_inited;
-	atomic_t st_1st_complete;
-	atomic_t st_enabled;
-	atomic_t st_pending_irqs;
-	struct completion st_irq_processed;
-	struct completion st_powerdown;
-	void *fts_info;
-};
-#endif
+	(struct fts_ts_info *info, unsigned char *data);
 
 #ifdef CONFIG_I2C_BY_DMA
 struct fts_dma_buf {
@@ -261,7 +242,7 @@ struct fts_ts_info {
 	struct notifier_block notifier;
 	bool sensor_sleep;
 
-	struct wakeup_source *wakesrc; // new
+	struct wakeup_source *wakesrc;
 
 	/* input lock */
 	struct mutex input_report_mutex;
@@ -273,9 +254,6 @@ struct fts_ts_info {
 	int cover_enabled;
 	int grip_enabled;
 	
-#ifdef CONFIG_SECURE_TOUCH
-	struct fts_secure_info *secure_info;
-#endif
 #ifdef CONFIG_I2C_BY_DMA
 	struct fts_dma_buf *dma_buf;
 #endif
@@ -288,11 +266,8 @@ struct fts_mode_switch {
 };
 
 int fts_chip_powercycle(struct fts_ts_info *info);
-extern int input_register_notifier_client(struct notifier_block *nb);
-extern int input_unregister_notifier_client(struct notifier_block *nb);
 
 extern int fts_proc_init(void);
 extern int fts_proc_remove(void);
-void fts_restore_regvalues(void);
 
 #endif
