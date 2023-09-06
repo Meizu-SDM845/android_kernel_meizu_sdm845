@@ -71,7 +71,7 @@
 			compatible = "snps,dwc3";
 			reg = <0x0a600000 0xcd00>;
 			interrupts = <0 133 0>;
-			usb-phy = <&qusb_phy0>, <&usb_qmp_dp_phy>;
+			usb-phy = <&qusb_phy0>, <&usb_nop_phy>;
 			maximum-speed = "high-speed";
 			tx-fifo-resize;
 			linux,sysdev_is_parent;
