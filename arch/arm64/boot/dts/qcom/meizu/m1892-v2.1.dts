@@ -10,6 +10,4 @@
 
 / {
 	model = "Qualcomm Technologies, Inc. SDM845 v2.1 SoC (Meizu 16th Plus)";
-	compatible = "qcom,sdm845";
-	qcom,board-id = <0 0>;
 };

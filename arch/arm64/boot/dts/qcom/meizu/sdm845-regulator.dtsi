@@ -572,7 +572,7 @@
 			<RPMH_REGULATOR_MODE_LPM
 			 RPMH_REGULATOR_MODE_HPM>;
 		qcom,mode-threshold-currents = <0 10000>;
-        status = "disabled";
+		status = "disabled";
 		pm8998_l21: regulator-l21 {
 			regulator-name = "pm8998_l21";
 			qcom,set = <RPMH_REGULATOR_SET_ALL>;
@@ -818,22 +818,22 @@
 	};
 
 	lcd_vddio_regulator: lcd_vddio_fixed_regulator {
-        compatible = "regulator-fixed";
-        regulator-name = "lcd_vddio_regulator";
-        regulator-min-microvolt = <1800000>;
-        regulator-max-microvolt = <1800000>;
-        regulator-boot-on;
-        enable-active-high;
-        gpio = <&tlmm 51 0>;
-    };
+		compatible = "regulator-fixed";
+		regulator-name = "lcd_vddio_regulator";
+		regulator-min-microvolt = <1800000>;
+		regulator-max-microvolt = <1800000>;
+		regulator-boot-on;
+		enable-active-high;
+		gpio = <&tlmm 51 0>;
+	};
 
-    lcd_vdd_regulator: lcd_vdd_fixed_regulator {
-        compatible = "regulator-fixed";
-        regulator-name = "lcd_vdd_regulator";
-        regulator-min-microvolt = <3000000>;
-        regulator-max-microvolt = <3000000>;
-        regulator-boot-on;
-        enable-active-high;
-        gpio = <&tlmm 26 0>;
-    };
+	lcd_vdd_regulator: lcd_vdd_fixed_regulator {
+		compatible = "regulator-fixed";
+		regulator-name = "lcd_vdd_regulator";
+		regulator-min-microvolt = <3000000>;
+		regulator-max-microvolt = <3000000>;
+		regulator-boot-on;
+		enable-active-high;
+		gpio = <&tlmm 26 0>;
+	};
 };

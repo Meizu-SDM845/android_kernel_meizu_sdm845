@@ -10,24 +10,20 @@
  * GNU General Public License for more details.
  */
 
-#include "sdm845-v2.dtsi"
-#include "../sdm845-v2-camera.dtsi"
+#include <dt-bindings/clock/qcom,gcc-sdm845.h>
+#include <dt-bindings/clock/qcom,camcc-sdm845.h>
+#include <dt-bindings/clock/qcom,dispcc-sdm845.h>
+#include <dt-bindings/clock/qcom,rpmh.h>
+#include <dt-bindings/interrupt-controller/arm-gic.h>
+
+#include "sdm845-sde-display.dtsi"
+#include "sdm845-mtp.dtsi"
+#include "sdm845-audio-overlay.dtsi"
+#include "sdm845-usb-overlay.dtsi"
 
 / {
-	model = "Qualcomm Technologies, Inc. SDM845 V2.1";
-	compatible = "qcom,sdm845";
+	model = "Qualcomm Technologies, Inc. SDM845 v2.1 MTP";
+	compatible = "qcom,sdm845-mtp", "qcom,sdm845", "qcom,mtp";
 	qcom,msm-id = <321 0x20001>;
-	qcom,board-id = <0 0>;
-};
-
-&spmi_bus {
-	/delete-property/ qcom,enable-ahb-bus-workaround;
-};
-
-&clock_gcc {
-	compatible = "qcom,gcc-sdm845-v2.1", "syscon";
-};
-
-&apps_smmu {
-	/delete-property/ qcom,no-asid-retention;
+	qcom,board-id = <8 0>;
 };

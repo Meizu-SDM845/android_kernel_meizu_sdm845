@@ -12,11 +12,11 @@
 
 #include <dt-bindings/gpio/gpio.h>
 #include "sdm845-pmic-overlay.dtsi"
-#include "sdm845-pinctrl-overlay.dtsi"
+#include "../sdm845-pinctrl-overlay.dtsi"
 #include "sdm845-camera-sensor-mtp.dtsi"
 
 &qupv3_se10_i2c {
-#include "smb1355.dtsi"
+#include "../smb1355.dtsi"
 };
 
 &vendor {
@@ -350,16 +350,7 @@
 };
 
 &usb1 {
-	status = "okay";
 	extcon = <&extcon_usb1>;
-};
-
-&qusb_phy1 {
-	status = "okay";
-};
-
-&usb_qmp_phy {
-	status = "okay";
 };
 
 &ext_5v_boost {
@@ -517,6 +508,7 @@
 		polling-delay-passive = <0>;
 		polling-delay = <0>;
 		thermal-sensors = <&pm8998_adc_tm 0x4c>;
+		wake-capable-sensor;
 		thermal-governor = "user_space";
 
 		trips {
@@ -532,6 +524,7 @@
 		polling-delay-passive = <0>;
 		polling-delay = <0>;
 		thermal-sensors = <&pm8998_adc_tm 0x4d>;
+		wake-capable-sensor;
 		thermal-governor = "user_space";
 
 		trips {
@@ -562,6 +555,7 @@
 		polling-delay-passive = <0>;
 		polling-delay = <0>;
 		thermal-sensors = <&pm8998_adc_tm 0x4f>;
+		wake-capable-sensor;
 		thermal-governor = "user_space";
 
 		trips {
@@ -577,6 +571,7 @@
 		polling-delay-passive = <0>;
 		polling-delay = <0>;
 		thermal-sensors = <&pm8998_adc_tm 0x51>;
+		wake-capable-sensor;
 		thermal-governor = "user_space";
 
 		trips {

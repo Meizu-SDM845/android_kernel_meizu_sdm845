@@ -11,12 +11,12 @@
  * GNU General Public License for more details.
  */
 
-#include "sdm845-wcd.dtsi"
+#include "../sdm845-wcd.dtsi"
 #include "msm-wsa881x.dtsi"
 #include <dt-bindings/clock/qcom,audio-ext-clk.h>
 
 &snd_934x {
-	qcom,audio-routing = 
+	qcom,audio-routing =
 		"AIF4 VI", "MCLK",
 		"RX_BIAS", "MCLK",
 		"MADINPUT", "MCLK",

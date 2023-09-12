@@ -202,6 +202,8 @@
 
 		qcom,ep-latency = <10>;
 
+		qcom,phy-status-offset = <0x974>;
+
 		qcom,boot-option = <0x1>;
 
 		linux,pci-domain = <0>;
@@ -258,7 +260,7 @@
 				"pcie_phy_aux_clk";
 
 		max-clock-frequency-hz = <0>, <0>, <19200000>, <0>, <0>, <0>,
-					<0>, <0>, <0>, <100000000>, <0>;
+					<0>, <0>, <0>, <0>, <100000000>, <0>;
 
 		resets = <&clock_gcc GCC_PCIE_0_BCR>,
 			<&clock_gcc GCC_PCIE_0_PHY_BCR>;
@@ -477,6 +479,8 @@
 
 		qcom,slv-addr-space-size = <0x20000000>;
 
+		qcom,phy-status-offset = <0x1aac>;
+
 		qcom,boot-option = <0x1>;
 
 		linux,pci-domain = <1>;
@@ -534,7 +538,7 @@
 				"pcie_phy_aux_clk";
 
 		max-clock-frequency-hz = <0>, <0>, <19200000>, <0>, <0>, <0>,
-					<0>, <0>, <0>, <100000000>, <0>;
+					<0>, <0>, <0>, <0>, <100000000>, <0>;
 
 		resets = <&clock_gcc GCC_PCIE_1_BCR>,
 			<&clock_gcc GCC_PCIE_1_PHY_BCR>;
