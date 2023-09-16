@@ -1,49 +1,71 @@
-/* Copyright (c) 2017-2018, The Linux Foundation. All rights reserved.
+/*
+ * Copyright (C) 2023 transaero21 <transaero21@elseboot.ru>
  *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License version 2 and
- * only version 2 as published by the Free Software Foundation.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
+ * SPDX-License-Identifier: GPL-2.0
  */
 
-#include <dt-bindings/gpio/gpio.h>
+&pmi8998_charger {
+	io-channels = <&pmi8998_rradc 8>,
+				  <&pmi8998_rradc 10>,
+				  <&pmi8998_rradc 3>,
+				  <&pmi8998_rradc 4>,
+				  <&pmi8998_rradc 2>;
+	io-channel-names = "charger_temp",
+					   "charger_temp_max",
+					   "usbin_i",
+					   "usbin_v",
+					   "skin_temp";
 
-#include "pmi8998.dtsi"
-
-&vendor {
-	ext_5v_boost: ext_5v_boost {
-		status = "disabled";
-		compatible = "regulator-fixed";
-		regulator-name = "ext_5v_boost";
-		gpio = <&pmi8998_gpios 10 GPIO_ACTIVE_HIGH>;
-		enable-active-high;
-
-		regulator-enable-ramp-delay = <1600>;
-		pinctrl-names = "default";
-		pinctrl-0 = <&usb2_ext_5v_boost_default>;
-	};
+	qcom,fcc-max-ua = <2950000>;
+	qcom,fv-max-uv = <4400000>;
+	qcom,dc-icl-ua = <0>;
+	qcom,hvdcp-disable;
+	meizu,used-ui-soc;
 };
 
-&pmi8998_charger {
-	smb2_vconn: qcom,smb2-vconn {
-		regulator-name = "smb2-vconn";
-	};
-	smb2_vbus: qcom,smb2-vbus {
-		regulator-name = "smb2-vbus";
-	};
+&pmi8998_fg {
+	qcom,fg-recharge-soc-thr = <99>;
+	qcom,fg-cutoff-voltage = <3300>;
+	qcom,fg-empty-voltage = <3100>;
+	qcom,fg-chg-term-current = <180>;
+	qcom,fg-sys-term-current = <4294966996>; /* Meizu =) */
+	qcom,fg-rsense-sel = <0>;
+	qcom,fg-force-load-profile;
+	qcom,linearize-soc;
+	qcom,fg-delta-soc-thr = <1>;
+};
+
+&red_led {
+	linux,name = "breath";
+	qcom,start-idx = <0x00>;
+	qcom,ramp-step-ms = <0x44>;
+	qcom,idx-len = <0x30>;
+	qcom,duty-pcts = [
+		00 00 00 00 00 00 00 00 00 00 00 01
+		02 03 04 05 06 07 08 09 0A 0B 0C 0D
+		0C 0B 0A 09 08 07 06 05 04 03 02 01
+		00 00 00 00 00 00 00 00 00 00 00 00
+	];
+	qcom,use-blink;
+};
+
+&ibat_vhigh {
+	temperature = <6800>;
+};
+
+&low_soc {
+	temperature = <3>;
 };
 
 &pmi8998_qnovo {
-	pinctrl-names = "default";
-	pinctrl-0 = <&qnovo_fet_ctrl_default>;
 	status = "disabled";
 };
 
 &usb0 {
-	extcon = <&pmi8998_pdphy>, <&pmi8998_pdphy>, <&eud>;
 	vbus_dwc3-supply = <&smb2_vbus>;
+};
+
+/* Erased (deleted) values */
+&usb_qmp_dp_phy {
+	extcon;
 };

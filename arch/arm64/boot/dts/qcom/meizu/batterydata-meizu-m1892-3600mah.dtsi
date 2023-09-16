@@ -6,15 +6,15 @@
 
 qcom,meizu_m1892_3600mah {
 	/* fg-gen3-batterydata-m1892-3600mah */
-	qcom,batt-id-kohm = <100>;
-	qcom,battery-name = "ATL-TERM";
-	qcom,fastchg-current-ma = <4200>;
 	qcom,max-voltage-uv = <4400000>;
-	qcom,battery-beta = <3435>;
-	qcom,checksum = <43746>;
-	qcom,battery-type = "meizu_m1892_3600mah";
-	qcom,gui-version = "PMI8998GUI - 2.0.0.58";
+	qcom,fastchg-current-ma = <4200>;
 	qcom,nom-batt-capacity-mah = <3600>;
+	qcom,batt-id-kohm = <100>;
+	qcom,battery-beta = <3435>;
+	qcom,battery-name = "ATL-TERM";
+	qcom,battery-type = "meizu_m1892_3600mah";
+	qcom,checksum = <43746>;
+	qcom,gui-version = "PMI8998GUI - 2.0.0.58";
 	qcom,fg-profile-data = [
 		8F 1F 94 05
 		73 0A 4A 06

@@ -1,23 +1,94 @@
-/* Copyright (c) 2017, The Linux Foundation. All rights reserved.
+/*
+ * Copyright (C) 2023 transaero21 <transaero21@elseboot.ru>
  *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License version 2 and
- * only version 2 as published by the Free Software Foundation.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
+ * SPDX-License-Identifier: GPL-2.0
  */
 
-#include "sdm845-v2.dtsi"
-#include "../sdm845-v2-camera.dtsi"
+#include "../sdm845-v2.1.dtsi"
+
+#include "sdm845-audio.dtsi"
+#include "sdm845-camera.dtsi"
+#include "sdm845-display.dtsi"
+#include "sdm845-pinctrl.dtsi"
+#include "sdm845-pmic.dtsi"
+#include "sdm845-usb.dtsi"
 
 / {
 	model = "Qualcomm Technologies, Inc. SDM845 V2.1";
 	compatible = "qcom,sdm845";
 	qcom,msm-id = <321 0x20001>;
 	qcom,board-id = <0 0>;
+
+	aliases {
+		spi1 = &qupv3_se0_spi;
+		spi2 = &qupv3_se7_spi;
+	};
+
+	reserved-memory {
+		ramoops_mem: ramoops@9ff00000 {
+			compatible = "ramoops";
+			reg = <0x00 0x9ff00000 0x00 0x200000>;
+			record-size = <0x4000>;
+			console-size = <0x40000>;
+		};
+
+		psn_mem: psn_mem_region@a0100000 {
+			compatible = "removed-dma-pool";
+			no-map;
+			reg = <0x00 0xa0100000 0x00 0x400>;
+		};
+	};
+};
+
+&firmware {
+	android {
+		compatible = "android,firmware";
+		vbmeta {
+			compatible = "android,vbmeta";
+			parts = "vbmeta,boot,system,custom,vendor,dtbo";
+		};
+
+		fstab {
+			compatible = "android,fstab";
+
+			system {
+				compatible = "android,system";
+				dev = "/dev/block/platform/soc/1d84000.ufshc/by-name/system";
+				type = "ext4";
+				mnt_flags = "ro,barrier=1,discard";
+				fsmgr_flags = "wait,avb";
+				status = "ok";
+			};
+
+			system_ext {
+				compatible = "android,system_ext";
+				dev = "/dev/block/platform/soc/1d84000.ufshc/by-name/custom";
+				type = "ext4";
+				mnt_flags = "ro,barrier=1,discard";
+				fsmgr_flags = "wait,avb";
+				status = "ok";
+			};
+
+			vendor {
+				compatible = "android,vendor";
+				dev = "/dev/block/platform/soc/1d84000.ufshc/by-name/vendor";
+				type = "ext4";
+				mnt_flags = "ro,barrier=1,discard";
+				fsmgr_flags = "wait,avb";
+				status = "ok";
+			};
+		};
+	};
+};
+
+&removed_region {
+	reg = <0 0x85fc0000 0 0x4b40000>;
+};
+
+&qcom_seecom {
+	/delete-property/ qcom,commonlib64-loaded-by-uefi;
+
+	reg = <0x86d00000 0x2200000>;
 };
 
 &spmi_bus {
@@ -30,4 +101,30 @@
 
 &apps_smmu {
 	/delete-property/ qcom,no-asid-retention;
+};
+
+&pcie1 {
+	/delete-property/ perst-gpio;
+
+	pinctrl-0 = <&pcie1_clkreq_default>;
+};
+
+&qupv3_se0_spi {
+	pinctrl-0 = <&qupv3_se0_spi_active &qupv3_se0_spi_cs1_active>;
+	pinctrl-1 = <&qupv3_se0_spi_sleep &qupv3_se0_spi_cs1_sleep>;
+};
+
+&pm8998_l14 {
+	/delete-property/ qcom,proxy-consumer-enable;
+	/delete-property/ qcom,proxy-consumer-current;
+};
+
+&pm8998_l21 {
+	status = "disabled";
+};
+
+&soc {
+	rpmh-regulator-ldoa21 {
+		status = "disabled";
+	};
 };

@@ -1,0 +1,27 @@
+/*
+ * Copyright (C) 2023 transaero21 <transaero21@elseboot.ru>
+ *
+ * SPDX-License-Identifier: GPL-2.0
+ */
+
+&soc {
+	lcd_vddio_regulator: lcd_vddio_fixed_regulator {
+		compatible = "regulator-fixed";
+		regulator-name = "lcd_vddio_regulator";
+		regulator-min-microvolt = <1800000>;
+		regulator-max-microvolt = <1800000>;
+		regulator-boot-on;
+		enable-active-high;
+		gpio = <&tlmm 51 0>;
+	};
+
+	lcd_vdd_regulator: lcd_vdd_fixed_regulator {
+		compatible = "regulator-fixed";
+		regulator-name = "lcd_vdd_regulator";
+		regulator-min-microvolt = <3000000>;
+		regulator-max-microvolt = <3000000>;
+		regulator-boot-on;
+		enable-active-high;
+		gpio = <&tlmm 26 0>;
+	};
+};

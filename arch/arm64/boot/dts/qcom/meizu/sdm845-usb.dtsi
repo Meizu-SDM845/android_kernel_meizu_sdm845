@@ -1,0 +1,33 @@
+/*
+ * Copyright (C) 2023 transaero21 <transaero21@elseboot.ru>
+ *
+ * SPDX-License-Identifier: GPL-2.0
+ */
+
+#include <dt-bindings/msm/msm-bus-ids.h>
+
+&usb0 {
+	qcom,pm-qos-latency = <52>;
+	qcom,msm-bus,vectors-KBps =
+		<MSM_BUS_MASTER_USB3 MSM_BUS_SLAVE_EBI_CH0 0 0>,
+		<MSM_BUS_MASTER_USB3 MSM_BUS_SLAVE_IPA_CFG 0 0>,
+		<MSM_BUS_MASTER_AMPSS_M0 MSM_BUS_SLAVE_USB3 0 0>,
+		<MSM_BUS_MASTER_USB3 MSM_BUS_SLAVE_EBI_CH0 1000000 1400000>,
+		<MSM_BUS_MASTER_USB3 MSM_BUS_SLAVE_IPA_CFG 2400 4800>,
+		<MSM_BUS_MASTER_AMPSS_M0 MSM_BUS_SLAVE_USB3 0 40000>;
+
+	dwc3@a600000 {
+			usb-phy = <&qusb_phy0>, <&usb_nop_phy>;
+			maximum-speed = "high-speed";
+	};
+};
+
+&qusb_phy0 {
+	pinctrl-names = "atest_usb13_suspend", "atest_usb13_active";
+	pinctrl-0 = <&atest_usb13_oe_suspend &atest_usb13_suspend>;
+	pinctrl-1 = <&atest_usb13_oe_active &atest_usb13_active>;
+};
+
+&usb_qmp_dp_phy {
+	status = "disabled";
+};
