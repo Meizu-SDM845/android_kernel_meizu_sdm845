@@ -1,1 +1,0 @@
-obj-$(CONFIG_INPUT_AWINIC_HAPTIC) += aw869x.o

@@ -1,0 +1,1 @@
+obj-$(CONFIG_AW8691_HAPTIC) += aw8691.o

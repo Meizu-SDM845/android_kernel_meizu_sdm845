@@ -1,5 +1,5 @@
-#ifndef _AW869X_H_
-#define _AW869X_H_
+#ifndef _AW8691_H_
+#define _AW8691_H_
 
 /*********************************************************
  *
@@ -12,7 +12,7 @@
 
 /*********************************************************
  *
- * aw869x.h
+ * aw8691.h
  *
  ********************************************************/
 #include <linux/regmap.h>
@@ -35,55 +35,55 @@
  ********************************************************/
 #define MAX_I2C_BUFFER_SIZE 65536
 
-#define AW869X_REG_MAX                      0xff
+#define AW8691_REG_MAX                      0xff
 
-#define AW869X_SEQUENCER_SIZE               4
-#define AW869X_SEQUENCER_LOOP_SIZE          2
+#define AW8691_SEQUENCER_SIZE               4
+#define AW8691_SEQUENCER_LOOP_SIZE          2
 
-#define AW869X_RTP_I2C_SINGLE_MAX_NUM       512
+#define AW8691_RTP_I2C_SINGLE_MAX_NUM       512
 
 #define HAPTIC_MAX_TIMEOUT                  10000
 
-//#define AW869X_HAPTIC_VBAT_MONITOR
+//#define AW8691_HAPTIC_VBAT_MONITOR
 
-#ifdef AW869X_HAPTIC_VBAT_MONITOR
+#ifdef AW8691_HAPTIC_VBAT_MONITOR
 //#define AWINIC_GET_BATTERY_READ_NODE
 #define SYS_BAT_DEV "/sys/class/power_supply/battery/voltage_now"
-#define AW869X_SYS_VBAT_REFERENCE           4200000
-#define AW869X_SYS_VBAT_MIN                 3000000
-#define AW869X_SYS_VBAT_MAX                 4500000
+#define AW8691_SYS_VBAT_REFERENCE           4200000
+#define AW8691_SYS_VBAT_MIN                 3000000
+#define AW8691_SYS_VBAT_MAX                 4500000
 #endif
 
-enum aw869x_flags {
-    AW869X_FLAG_NONR = 0,
-    AW869X_FLAG_SKIP_INTERRUPTS = 1,
+enum aw8691_flags {
+    AW8691_FLAG_NONR = 0,
+    AW8691_FLAG_SKIP_INTERRUPTS = 1,
 };
 
-enum aw869x_chipids {
+enum aw8691_chipids {
     AW8691_ID = 0,
 };
 
-enum aw869x_haptic_read_write {
-    AW869X_HAPTIC_CMD_READ_REG = 0,
-    AW869X_HAPTIC_CMD_WRITE_REG = 1,
-    AW869X_HAPTIC_CMD_UPDATE_FIRMWARE = 2,
-    AW869X_HAPTIC_CMD_READ_FIRMWARE = 3,
+enum aw8691_haptic_read_write {
+    AW8691_HAPTIC_CMD_READ_REG = 0,
+    AW8691_HAPTIC_CMD_WRITE_REG = 1,
+    AW8691_HAPTIC_CMD_UPDATE_FIRMWARE = 2,
+    AW8691_HAPTIC_CMD_READ_FIRMWARE = 3,
 };
 
 
-enum aw869x_haptic_work_mode {
-    AW869X_HAPTIC_STANDBY_MODE = 0,
-    AW869X_HAPTIC_RAM_MODE = 1,
-    AW869X_HAPTIC_RTP_MODE = 2,
-    AW869X_HAPTIC_TRIG_MODE = 3,
+enum aw8691_haptic_work_mode {
+    AW8691_HAPTIC_STANDBY_MODE = 0,
+    AW8691_HAPTIC_RAM_MODE = 1,
+    AW8691_HAPTIC_RTP_MODE = 2,
+    AW8691_HAPTIC_TRIG_MODE = 3,
 };
 
-enum aw869x_haptic_bst_mode {
-    AW869X_HAPTIC_BYPASS_MODE = 0,
-    AW869X_HAPTIC_BOOST_MODE = 1,
+enum aw8691_haptic_bst_mode {
+    AW8691_HAPTIC_BYPASS_MODE = 0,
+    AW8691_HAPTIC_BOOST_MODE = 1,
 };
 
-enum aw869x_haptic_mode{
+enum aw8691_haptic_mode{
 	HAPTIC_NONE	= 0x00,
 	HAPTIC_SHORT	= 0x01,
 	HAPTIC_LONG	= 0x02,
@@ -111,7 +111,7 @@ struct ram {
     unsigned char baseaddr_shift;
 };
 
-struct aw869x {
+struct aw8691 {
     struct regmap *regmap;
     struct i2c_client *i2c;
     struct device *dev;
@@ -141,7 +141,7 @@ struct aw869x {
     int seq;
     int loop;
 
-    enum aw869x_haptic_mode  haptic_mode;
+    enum aw8691_haptic_mode  haptic_mode;
     bool factory_mode;
     bool debugfs_debug;
     unsigned char hwen_flag;
@@ -162,7 +162,7 @@ struct aw869x {
     struct work_struct ram_work;
 };
 
-struct aw869x_container{
+struct aw8691_container{
     int len;
     unsigned char data[];
 };
@@ -173,24 +173,24 @@ struct aw869x_container{
  * ioctl
  *
  ********************************************************/
-struct aw869x_seq_loop {
-	unsigned char loop[AW869X_SEQUENCER_SIZE];
+struct aw8691_seq_loop {
+	unsigned char loop[AW8691_SEQUENCER_SIZE];
 };
 
-struct aw869x_que_seq {
-	unsigned char index[AW869X_SEQUENCER_SIZE];
+struct aw8691_que_seq {
+	unsigned char index[AW8691_SEQUENCER_SIZE];
 };
 
 
-#define AW869X_HAPTIC_IOCTL_MAGIC         'h'
+#define AW8691_HAPTIC_IOCTL_MAGIC         'h'
 
-#define AW869X_HAPTIC_SET_QUE_SEQ         _IOWR(AW869X_HAPTIC_IOCTL_MAGIC, 1, struct aw869x_que_seq*)
-#define AW869X_HAPTIC_SET_SEQ_LOOP        _IOWR(AW869X_HAPTIC_IOCTL_MAGIC, 2, struct aw869x_seq_loop*)
-#define AW869X_HAPTIC_PLAY_QUE_SEQ        _IOWR(AW869X_HAPTIC_IOCTL_MAGIC, 3, unsigned int)
-#define AW869X_HAPTIC_SET_BST_VOL         _IOWR(AW869X_HAPTIC_IOCTL_MAGIC, 4, unsigned int)
-#define AW869X_HAPTIC_SET_BST_PEAK_CUR    _IOWR(AW869X_HAPTIC_IOCTL_MAGIC, 5, unsigned int)
-#define AW869X_HAPTIC_SET_GAIN            _IOWR(AW869X_HAPTIC_IOCTL_MAGIC, 6, unsigned int)
-#define AW869X_HAPTIC_PLAY_REPEAT_SEQ     _IOWR(AW869X_HAPTIC_IOCTL_MAGIC, 7, unsigned int)
+#define AW8691_HAPTIC_SET_QUE_SEQ         _IOWR(AW8691_HAPTIC_IOCTL_MAGIC, 1, struct aw8691_que_seq*)
+#define AW8691_HAPTIC_SET_SEQ_LOOP        _IOWR(AW8691_HAPTIC_IOCTL_MAGIC, 2, struct aw8691_seq_loop*)
+#define AW8691_HAPTIC_PLAY_QUE_SEQ        _IOWR(AW8691_HAPTIC_IOCTL_MAGIC, 3, unsigned int)
+#define AW8691_HAPTIC_SET_BST_VOL         _IOWR(AW8691_HAPTIC_IOCTL_MAGIC, 4, unsigned int)
+#define AW8691_HAPTIC_SET_BST_PEAK_CUR    _IOWR(AW8691_HAPTIC_IOCTL_MAGIC, 5, unsigned int)
+#define AW8691_HAPTIC_SET_GAIN            _IOWR(AW8691_HAPTIC_IOCTL_MAGIC, 6, unsigned int)
+#define AW8691_HAPTIC_PLAY_REPEAT_SEQ     _IOWR(AW8691_HAPTIC_IOCTL_MAGIC, 7, unsigned int)
 
 
 #endif

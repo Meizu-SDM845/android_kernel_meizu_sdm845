@@ -868,4 +868,4 @@ config OKL4_LINK_SHBUF
 	  which can be written to or read from to access the shared memory. An ioctl
 	  on the device is used to send a virtual interrupt to the partner cell.
 
-source "drivers/misc/aw869x/Kconfig"
+source "drivers/misc/aw8691/Kconfig"
