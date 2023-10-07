@@ -1293,29 +1293,6 @@ static void aw8691_vibrate(struct aw8691 *aw8691, int value)
 	mutex_unlock(&aw8691->lock);
 }
 
-#ifdef TIMED_OUTPUT
-static int aw8691_vibrator_get_time(struct timed_output_dev *dev)
-{
-	struct aw8691 *aw8691 = container_of(dev, struct aw8691, to_dev);
-
-	if (hrtimer_active(&aw8691->timer)) {
-		ktime_t r = hrtimer_get_remaining(&aw8691->timer);
-		return ktime_to_ms(r);
-	}
-
-	return 0;
-}
-
-static void aw8691_vibrator_enable(struct timed_output_dev *dev, int value)
-{
-	struct aw8691 *aw8691 = container_of(dev, struct aw8691, to_dev);
-
-	pr_debug("%s enter, value=%d\n", __func__, value);
-	aw8691_vibrate(aw8691, value);
-	pr_debug("%s exit\n", __func__);
-}
-
-#else
 static enum led_brightness aw8691_haptic_brightness_get(struct led_classdev *cdev)
 {
 	struct aw8691 *aw8691 = container_of(cdev, struct aw8691, cdev);
@@ -1340,7 +1317,6 @@ static void aw8691_haptic_brightness_set(struct led_classdev *cdev,
 	mutex_unlock(&aw8691->lock);
 
 }
-#endif
 
 static ssize_t aw8691_extra_show(struct device *dev,
 	struct device_attribute *attr, char *buf)
@@ -1357,13 +1333,8 @@ static ssize_t aw8691_extra_store(struct device *dev,
 static ssize_t aw8691_state_show(struct device *dev,
 	struct device_attribute *attr, char *buf)
 {
-#ifdef TIMED_OUTPUT
-	struct timed_output_dev *to_dev = dev_get_drvdata(dev);
-	struct aw8691 *aw8691 = container_of(to_dev, struct aw8691, to_dev);
-#else
 	struct led_classdev *cdev = dev_get_drvdata(dev);
 	struct aw8691 *aw8691 = container_of(cdev, struct aw8691, cdev);
-#endif
 
 	return snprintf(buf, PAGE_SIZE, "%d\n", aw8691->state);
 }
@@ -1377,13 +1348,8 @@ static ssize_t aw8691_state_store(struct device *dev,
 static ssize_t aw8691_duration_show(struct device *dev,
 	struct device_attribute *attr, char *buf)
 {
-#ifdef TIMED_OUTPUT
-	struct timed_output_dev *to_dev = dev_get_drvdata(dev);
-	struct aw8691 *aw8691 = container_of(to_dev, struct aw8691, to_dev);
-#else
 	struct led_classdev *cdev = dev_get_drvdata(dev);
 	struct aw8691 *aw8691 = container_of(cdev, struct aw8691, cdev);
-#endif
 	ktime_t time_rem;
 	s64 time_ms = 0;
 
@@ -1398,13 +1364,8 @@ static ssize_t aw8691_duration_show(struct device *dev,
 static ssize_t aw8691_duration_store(struct device *dev,
 	struct device_attribute *attr, const char *buf, size_t count)
 {
-#ifdef TIMED_OUTPUT
-	struct timed_output_dev *to_dev = dev_get_drvdata(dev);
-	struct aw8691 *aw8691 = container_of(to_dev, struct aw8691, to_dev);
-#else
 	struct led_classdev *cdev = dev_get_drvdata(dev);
 	struct aw8691 *aw8691 = container_of(cdev, struct aw8691, cdev);
-#endif
 	unsigned int val = 0;
 	int rc = 0;
 
@@ -1426,13 +1387,8 @@ static ssize_t aw8691_duration_store(struct device *dev,
 static ssize_t aw8691_activate_show(struct device *dev,
 	struct device_attribute *attr, char *buf)
 {
-#ifdef TIMED_OUTPUT
-	struct timed_output_dev *to_dev = dev_get_drvdata(dev);
-	struct aw8691 *aw8691 = container_of(to_dev, struct aw8691, to_dev);
-#else
 	struct led_classdev *cdev = dev_get_drvdata(dev);
 	struct aw8691 *aw8691 = container_of(cdev, struct aw8691, cdev);
-#endif
 
 	/* For now nothing to show */
 	return snprintf(buf, PAGE_SIZE, "%d\n", aw8691->state);
@@ -1441,13 +1397,8 @@ static ssize_t aw8691_activate_show(struct device *dev,
 static ssize_t aw8691_activate_store(struct device *dev,
 	struct device_attribute *attr, const char *buf, size_t count)
 {
-#ifdef TIMED_OUTPUT
-	struct timed_output_dev *to_dev = dev_get_drvdata(dev);
-	struct aw8691 *aw8691 = container_of(to_dev, struct aw8691, to_dev);
-#else
 	struct led_classdev *cdev = dev_get_drvdata(dev);
 	struct aw8691 *aw8691 = container_of(cdev, struct aw8691, cdev);
-#endif
 	unsigned int val = 0;
 	int rc = 0;
 
@@ -1474,13 +1425,8 @@ static ssize_t aw8691_activate_store(struct device *dev,
 static ssize_t aw8691_index_show(struct device *dev,
 	struct device_attribute *attr, char *buf)
 {
-#ifdef TIMED_OUTPUT
-	struct timed_output_dev *to_dev = dev_get_drvdata(dev);
-	struct aw8691 *aw8691 = container_of(to_dev, struct aw8691, to_dev);
-#else
 	struct led_classdev *cdev = dev_get_drvdata(dev);
 	struct aw8691 *aw8691 = container_of(cdev, struct aw8691, cdev);
-#endif
 	unsigned char reg_val = 0;
 	aw8691_i2c_read(aw8691, AW8691_REG_QUE_SEQ1, &reg_val);
 	aw8691->index = reg_val;
@@ -1491,13 +1437,8 @@ static ssize_t aw8691_index_show(struct device *dev,
 static ssize_t aw8691_index_store(struct device *dev,
 	struct device_attribute *attr, const char *buf, size_t count)
 {
-#ifdef TIMED_OUTPUT
-	struct timed_output_dev *to_dev = dev_get_drvdata(dev);
-	struct aw8691 *aw8691 = container_of(to_dev, struct aw8691, to_dev);
-#else
 	struct led_classdev *cdev = dev_get_drvdata(dev);
 	struct aw8691 *aw8691 = container_of(cdev, struct aw8691, cdev);
-#endif
 	unsigned int val = 0;
 	int rc = 0;
 
@@ -1517,13 +1458,8 @@ static ssize_t aw8691_index_store(struct device *dev,
 static ssize_t aw8691_vmax_show(struct device *dev,
 	struct device_attribute *attr, char *buf)
 {
-#ifdef TIMED_OUTPUT
-	struct timed_output_dev *to_dev = dev_get_drvdata(dev);
-	struct aw8691 *aw8691 = container_of(to_dev, struct aw8691, to_dev);
-#else
 	struct led_classdev *cdev = dev_get_drvdata(dev);
 	struct aw8691 *aw8691 = container_of(cdev, struct aw8691, cdev);
-#endif
 
 	return snprintf(buf, PAGE_SIZE, "%d\n", aw8691->vmax);
 }
@@ -1531,13 +1467,8 @@ static ssize_t aw8691_vmax_show(struct device *dev,
 static ssize_t aw8691_vmax_store(struct device *dev,
 	struct device_attribute *attr, const char *buf, size_t count)
 {
-#ifdef TIMED_OUTPUT
-	struct timed_output_dev *to_dev = dev_get_drvdata(dev);
-	struct aw8691 *aw8691 = container_of(to_dev, struct aw8691, to_dev);
-#else
 	struct led_classdev *cdev = dev_get_drvdata(dev);
 	struct aw8691 *aw8691 = container_of(cdev, struct aw8691, cdev);
-#endif
 	unsigned int val = 0;
 	int rc = 0;
 
@@ -1557,13 +1488,8 @@ static ssize_t aw8691_vmax_store(struct device *dev,
 static ssize_t aw8691_gain_show(struct device *dev,
 	struct device_attribute *attr, char *buf)
 {
-#ifdef TIMED_OUTPUT
-	struct timed_output_dev *to_dev = dev_get_drvdata(dev);
-	struct aw8691 *aw8691 = container_of(to_dev, struct aw8691, to_dev);
-#else
 	struct led_classdev *cdev = dev_get_drvdata(dev);
 	struct aw8691 *aw8691 = container_of(cdev, struct aw8691, cdev);
-#endif
 
 	return snprintf(buf, PAGE_SIZE, "%d\n", aw8691->gain_debug);
 }
@@ -1571,13 +1497,8 @@ static ssize_t aw8691_gain_show(struct device *dev,
 static ssize_t aw8691_gain_store(struct device *dev,
 	struct device_attribute *attr, const char *buf, size_t count)
 {
-#ifdef TIMED_OUTPUT
-	struct timed_output_dev *to_dev = dev_get_drvdata(dev);
-	struct aw8691 *aw8691 = container_of(to_dev, struct aw8691, to_dev);
-#else
 	struct led_classdev *cdev = dev_get_drvdata(dev);
 	struct aw8691 *aw8691 = container_of(cdev, struct aw8691, cdev);
-#endif
 	unsigned int val = 0;
 	int rc = 0;
 
@@ -1602,13 +1523,8 @@ static ssize_t aw8691_gain_store(struct device *dev,
 static ssize_t aw8691_seq_show(struct device *dev,
 	struct device_attribute *attr, char *buf)
 {
-#ifdef TIMED_OUTPUT
-	struct timed_output_dev *to_dev = dev_get_drvdata(dev);
-	struct aw8691 *aw8691 = container_of(to_dev, struct aw8691, to_dev);
-#else
 	struct led_classdev *cdev = dev_get_drvdata(dev);
 	struct aw8691 *aw8691 = container_of(cdev, struct aw8691, cdev);
-#endif
 	size_t count = 0;
 	unsigned char i = 0;
 	unsigned char reg_val = 0;
@@ -1626,13 +1542,8 @@ static ssize_t aw8691_seq_show(struct device *dev,
 static ssize_t aw8691_seq_store(struct device *dev,
 	struct device_attribute *attr, const char *buf, size_t count)
 {
-#ifdef TIMED_OUTPUT
-	struct timed_output_dev *to_dev = dev_get_drvdata(dev);
-	struct aw8691 *aw8691 = container_of(to_dev, struct aw8691, to_dev);
-#else
 	struct led_classdev *cdev = dev_get_drvdata(dev);
 	struct aw8691 *aw8691 = container_of(cdev, struct aw8691, cdev);
-#endif
 	unsigned int val = 0;
 	int rc = 0;
 
@@ -1652,13 +1563,8 @@ static ssize_t aw8691_seq_store(struct device *dev,
 static ssize_t aw8691_loop_show(struct device *dev,
 	struct device_attribute *attr, char *buf)
 {
-#ifdef TIMED_OUTPUT
-	struct timed_output_dev *to_dev = dev_get_drvdata(dev);
-	struct aw8691 *aw8691 = container_of(to_dev, struct aw8691, to_dev);
-#else
 	struct led_classdev *cdev = dev_get_drvdata(dev);
 	struct aw8691 *aw8691 = container_of(cdev, struct aw8691, cdev);
-#endif
 	size_t count = 0;
 	unsigned char i = 0;
 	unsigned char reg_val = 0;
@@ -1683,13 +1589,8 @@ static ssize_t aw8691_loop_show(struct device *dev,
 static ssize_t aw8691_loop_store(struct device *dev,
 	struct device_attribute *attr, const char *buf, size_t count)
 {
-#ifdef TIMED_OUTPUT
-	struct timed_output_dev *to_dev = dev_get_drvdata(dev);
-	struct aw8691 *aw8691 = container_of(to_dev, struct aw8691, to_dev);
-#else
 	struct led_classdev *cdev = dev_get_drvdata(dev);
 	struct aw8691 *aw8691 = container_of(cdev, struct aw8691, cdev);
-#endif
 	unsigned int val = 0;
 	int rc = 0;
 
@@ -1709,13 +1610,8 @@ static ssize_t aw8691_loop_store(struct device *dev,
 static ssize_t aw8691_reg_show(struct device *dev,
 	struct device_attribute *attr, char *buf)
 {
-#ifdef TIMED_OUTPUT
-	struct timed_output_dev *to_dev = dev_get_drvdata(dev);
-	struct aw8691 *aw8691 = container_of(to_dev, struct aw8691, to_dev);
-#else
 	struct led_classdev *cdev = dev_get_drvdata(dev);
 	struct aw8691 *aw8691 = container_of(cdev, struct aw8691, cdev);
-#endif
 	ssize_t len = 0;
 	unsigned char i = 0;
 	unsigned char reg_val = 0;
@@ -1731,13 +1627,8 @@ static ssize_t aw8691_reg_show(struct device *dev,
 static ssize_t aw8691_reg_store(struct device *dev,
 	struct device_attribute *attr, const char *buf, size_t count)
 {
-#ifdef TIMED_OUTPUT
-	struct timed_output_dev *to_dev = dev_get_drvdata(dev);
-	struct aw8691 *aw8691 = container_of(to_dev, struct aw8691, to_dev);
-#else
 	struct led_classdev *cdev = dev_get_drvdata(dev);
 	struct aw8691 *aw8691 = container_of(cdev, struct aw8691, cdev);
-#endif
 	unsigned int databuf[2] = {0, 0};
 
 	if (2 == sscanf(buf, "%x %x", &databuf[0], &databuf[1])) {
@@ -1759,13 +1650,8 @@ static ssize_t aw8691_rtp_show(struct device *dev,
 static ssize_t aw8691_rtp_store(struct device *dev,
 	struct device_attribute *attr, const char *buf, size_t count)
 {
-#ifdef TIMED_OUTPUT
-	struct timed_output_dev *to_dev = dev_get_drvdata(dev);
-	struct aw8691 *aw8691 = container_of(to_dev, struct aw8691, to_dev);
-#else
 	struct led_classdev *cdev = dev_get_drvdata(dev);
 	struct aw8691 *aw8691 = container_of(cdev, struct aw8691, cdev);
-#endif
 	unsigned int val = 0;
 	int rc = 0;
 
@@ -1789,13 +1675,8 @@ static ssize_t aw8691_ram_update_show(struct device *dev,
 static ssize_t aw8691_ram_update_store(struct device *dev, struct device_attribute *attr,
 	const char *buf, size_t count)
 {
-#ifdef TIMED_OUTPUT
-	struct timed_output_dev *to_dev = dev_get_drvdata(dev);
-	struct aw8691 *aw8691 = container_of(to_dev, struct aw8691, to_dev);
-#else
 	struct led_classdev *cdev = dev_get_drvdata(dev);
 	struct aw8691 *aw8691 = container_of(cdev, struct aw8691, cdev);
-#endif
 	unsigned int val = 0;
 	int rc = 0;
 
@@ -1813,13 +1694,8 @@ static ssize_t aw8691_ram_update_store(struct device *dev, struct device_attribu
 static ssize_t aw8691_pwk_p_show(struct device *dev,
 	struct device_attribute *attr, char *buf)
 {
-#ifdef TIMED_OUTPUT
-	struct timed_output_dev *to_dev = dev_get_drvdata(dev);
-	struct aw8691 *aw8691 = container_of(to_dev, struct aw8691, to_dev);
-#else
 	struct led_classdev *cdev = dev_get_drvdata(dev);
 	struct aw8691 *aw8691 = container_of(cdev, struct aw8691, cdev);
-#endif
 	unsigned char reg_val = 0;
 	aw8691_i2c_read(aw8691, AW8691_REG_TRG1_WAV_P, &reg_val);
 
@@ -1829,13 +1705,8 @@ static ssize_t aw8691_pwk_p_show(struct device *dev,
 static ssize_t aw8691_pwk_p_store(struct device *dev,
 	struct device_attribute *attr, const char *buf, size_t count)
 {
-#ifdef TIMED_OUTPUT
-	struct timed_output_dev *to_dev = dev_get_drvdata(dev);
-	struct aw8691 *aw8691 = container_of(to_dev, struct aw8691, to_dev);
-#else
 	struct led_classdev *cdev = dev_get_drvdata(dev);
 	struct aw8691 *aw8691 = container_of(cdev, struct aw8691, cdev);
-#endif
 	unsigned int databuf = 0;
 	if (1 == sscanf(buf, "%x", &databuf)) {
 		aw8691_i2c_write(aw8691, AW8691_REG_TRG1_WAV_P,
@@ -1848,13 +1719,8 @@ static ssize_t aw8691_pwk_p_store(struct device *dev,
 static ssize_t aw8691_pwk_n_show(struct device *dev,
 	struct device_attribute *attr, char *buf)
 {
-#ifdef TIMED_OUTPUT
-	struct timed_output_dev *to_dev = dev_get_drvdata(dev);
-	struct aw8691 *aw8691 = container_of(to_dev, struct aw8691, to_dev);
-#else
 	struct led_classdev *cdev = dev_get_drvdata(dev);
 	struct aw8691 *aw8691 = container_of(cdev, struct aw8691, cdev);
-#endif
 	unsigned char reg_val = 0;
 	aw8691_i2c_read(aw8691, AW8691_REG_TRG1_WAV_N, &reg_val);
 
@@ -1864,13 +1730,8 @@ static ssize_t aw8691_pwk_n_show(struct device *dev,
 static ssize_t aw8691_pwk_n_store(struct device *dev,
 	struct device_attribute *attr, const char *buf, size_t count)
 {
-#ifdef TIMED_OUTPUT
-	struct timed_output_dev *to_dev = dev_get_drvdata(dev);
-	struct aw8691 *aw8691 = container_of(to_dev, struct aw8691, to_dev);
-#else
 	struct led_classdev *cdev = dev_get_drvdata(dev);
 	struct aw8691 *aw8691 = container_of(cdev, struct aw8691, cdev);
-#endif
 	unsigned int databuf = 0;
 	if (1 == sscanf(buf, "%x", &databuf)) {
 		aw8691_i2c_write(aw8691, AW8691_REG_TRG1_WAV_N,
@@ -1883,13 +1744,8 @@ static ssize_t aw8691_pwk_n_store(struct device *dev,
 static ssize_t aw8691_voldown_p_show(struct device *dev,
 	struct device_attribute *attr, char *buf)
 {
-#ifdef TIMED_OUTPUT
-	struct timed_output_dev *to_dev = dev_get_drvdata(dev);
-	struct aw8691 *aw8691 = container_of(to_dev, struct aw8691, to_dev);
-#else
 	struct led_classdev *cdev = dev_get_drvdata(dev);
 	struct aw8691 *aw8691 = container_of(cdev, struct aw8691, cdev);
-#endif
 	unsigned char reg_val = 0;
 	aw8691_i2c_read(aw8691, AW8691_REG_TRG2_WAV_P, &reg_val);
 
@@ -1899,13 +1755,8 @@ static ssize_t aw8691_voldown_p_show(struct device *dev,
 static ssize_t aw8691_voldown_p_store(struct device *dev,
 	struct device_attribute *attr, const char *buf, size_t count)
 {
-#ifdef TIMED_OUTPUT
-	struct timed_output_dev *to_dev = dev_get_drvdata(dev);
-	struct aw8691 *aw8691 = container_of(to_dev, struct aw8691, to_dev);
-#else
 	struct led_classdev *cdev = dev_get_drvdata(dev);
 	struct aw8691 *aw8691 = container_of(cdev, struct aw8691, cdev);
-#endif
 	unsigned int databuf = 0;
 	if (1 == sscanf(buf, "%x", &databuf)) {
 		aw8691_i2c_write(aw8691, AW8691_REG_TRG2_WAV_P,
@@ -1918,13 +1769,8 @@ static ssize_t aw8691_voldown_p_store(struct device *dev,
 static ssize_t aw8691_voldown_n_show(struct device *dev,
 	struct device_attribute *attr, char *buf)
 {
-#ifdef TIMED_OUTPUT
-	struct timed_output_dev *to_dev = dev_get_drvdata(dev);
-	struct aw8691 *aw8691 = container_of(to_dev, struct aw8691, to_dev);
-#else
 	struct led_classdev *cdev = dev_get_drvdata(dev);
 	struct aw8691 *aw8691 = container_of(cdev, struct aw8691, cdev);
-#endif
 	unsigned char reg_val = 0;
 	aw8691_i2c_read(aw8691, AW8691_REG_TRG2_WAV_N, &reg_val);
 
@@ -1934,13 +1780,8 @@ static ssize_t aw8691_voldown_n_show(struct device *dev,
 static ssize_t aw8691_voldown_n_store(struct device *dev,
 	struct device_attribute *attr, const char *buf, size_t count)
 {
-#ifdef TIMED_OUTPUT
-	struct timed_output_dev *to_dev = dev_get_drvdata(dev);
-	struct aw8691 *aw8691 = container_of(to_dev, struct aw8691, to_dev);
-#else
 	struct led_classdev *cdev = dev_get_drvdata(dev);
 	struct aw8691 *aw8691 = container_of(cdev, struct aw8691, cdev);
-#endif
 	unsigned int databuf = 0;
 	if (1 == sscanf(buf, "%x", &databuf)) {
 		aw8691_i2c_write(aw8691, AW8691_REG_TRG2_WAV_N,
@@ -1952,13 +1793,8 @@ static ssize_t aw8691_voldown_n_store(struct device *dev,
 static ssize_t aw8691_volup_p_show(struct device *dev,
 	struct device_attribute *attr, char *buf)
 {
-#ifdef TIMED_OUTPUT
-	struct timed_output_dev *to_dev = dev_get_drvdata(dev);
-	struct aw8691 *aw8691 = container_of(to_dev, struct aw8691, to_dev);
-#else
 	struct led_classdev *cdev = dev_get_drvdata(dev);
 	struct aw8691 *aw8691 = container_of(cdev, struct aw8691, cdev);
-#endif
 	unsigned char reg_val = 0;
 	aw8691_i2c_read(aw8691, AW8691_REG_TRG3_WAV_P, &reg_val);
 
@@ -1968,13 +1804,8 @@ static ssize_t aw8691_volup_p_show(struct device *dev,
 static ssize_t aw8691_volup_p_store(struct device *dev,
 	struct device_attribute *attr, const char *buf, size_t count)
 {
-#ifdef TIMED_OUTPUT
-    struct timed_output_dev *to_dev = dev_get_drvdata(dev);
-    struct aw8691 *aw8691 = container_of(to_dev, struct aw8691, to_dev);
-#else
     struct led_classdev *cdev = dev_get_drvdata(dev);
     struct aw8691 *aw8691 = container_of(cdev, struct aw8691, cdev);
-#endif
     unsigned int databuf = 0;
     if(1 == sscanf(buf, "%x", &databuf)) {
 	aw8691_i2c_write(aw8691, AW8691_REG_TRG3_WAV_P, (unsigned char)databuf);
@@ -1986,13 +1817,8 @@ static ssize_t aw8691_volup_p_store(struct device *dev,
 static ssize_t aw8691_volup_n_show(struct device *dev,
 	struct device_attribute *attr, char *buf)
 {
-#ifdef TIMED_OUTPUT
-	struct timed_output_dev *to_dev = dev_get_drvdata(dev);
-	struct aw8691 *aw8691 = container_of(to_dev, struct aw8691, to_dev);
-#else
 	struct led_classdev *cdev = dev_get_drvdata(dev);
 	struct aw8691 *aw8691 = container_of(cdev, struct aw8691, cdev);
-#endif
 	unsigned char reg_val = 0;
 	aw8691_i2c_read(aw8691, AW8691_REG_TRG3_WAV_N, &reg_val);
 
@@ -2002,13 +1828,8 @@ static ssize_t aw8691_volup_n_show(struct device *dev,
 static ssize_t aw8691_volup_n_store(struct device *dev,
 	struct device_attribute *attr, const char *buf, size_t count)
 {
-#ifdef TIMED_OUTPUT
-	struct timed_output_dev *to_dev = dev_get_drvdata(dev);
-	struct aw8691 *aw8691 = container_of(to_dev, struct aw8691, to_dev);
-#else
 	struct led_classdev *cdev = dev_get_drvdata(dev);
 	struct aw8691 *aw8691 = container_of(cdev, struct aw8691, cdev);
-#endif
 	unsigned int databuf = 0;
 	if (1 == sscanf(buf, "%x", &databuf)) {
 		aw8691_i2c_write(aw8691, AW8691_REG_TRG3_WAV_N, (unsigned char)databuf);
@@ -2019,13 +1840,8 @@ static ssize_t aw8691_volup_n_store(struct device *dev,
 static ssize_t aw8691_reset_show(struct device *dev,
 	struct device_attribute *attr, char *buf)
 {
-#ifdef TIMED_OUTPUT
-	struct timed_output_dev *to_dev = dev_get_drvdata(dev);
-	struct aw8691 *aw8691 = container_of(to_dev, struct aw8691, to_dev);
-#else
 	struct led_classdev *cdev = dev_get_drvdata(dev);
 	struct aw8691 *aw8691 = container_of(cdev, struct aw8691, cdev);
-#endif
 	unsigned char reg_val = 0;
 	aw8691_i2c_read(aw8691, AW8691_REG_ID, &reg_val);
 
@@ -2035,13 +1851,8 @@ static ssize_t aw8691_reset_show(struct device *dev,
 static ssize_t aw8691_reset_store(struct device *dev,
 	struct device_attribute *attr, const char *buf, size_t count)
 {
-#ifdef TIMED_OUTPUT
-	struct timed_output_dev *to_dev = dev_get_drvdata(dev);
-	struct aw8691 *aw8691 = container_of(to_dev, struct aw8691, to_dev);
-#else
 	struct led_classdev *cdev = dev_get_drvdata(dev);
 	struct aw8691 *aw8691 = container_of(cdev, struct aw8691, cdev);
-#endif
 	unsigned int val = 0;
 	int rc = 0;
 
@@ -2158,23 +1969,6 @@ static int aw8691_vibrator_init(struct aw8691 *aw8691)
 		ret = aw8691_i2c_read(aw8691, AW8691_REG_QUE_SEQ1 + i, &reg_val);
 		aw8691->seq |= (reg_val << ((AW8691_SEQUENCER_SIZE -i - 1) * 8));
 	}
-#ifdef TIMED_OUTPUT
-	aw8691->to_dev.name = "vibrator";
-	aw8691->to_dev.get_time = aw8691_vibrator_get_time;
-	aw8691->to_dev.enable = aw8691_vibrator_enable;
-
-	ret = timed_output_dev_register(&(aw8691->to_dev));
-	if (ret < 0) {
-		dev_err(aw8691->dev, "%s: fail to create timed output dev\n",
-			__func__);
-		return ret;
-	}
-	ret = sysfs_create_group(&aw8691->to_dev.dev->kobj, &aw8691_vibrator_attribute_group);
-	if (ret < 0) {
-		dev_err(aw8691->dev, "%s error creating sysfs attr files\n", __func__);
-		return ret;
-	}
-#else
 	aw8691->cdev.name = "vibrator";
 	aw8691->cdev.brightness_get = aw8691_haptic_brightness_get;
 	aw8691->cdev.brightness_set = aw8691_haptic_brightness_set;
@@ -2192,7 +1986,6 @@ static int aw8691_vibrator_init(struct aw8691 *aw8691)
 			__func__);
 		return ret;
 	}
-#endif
 	hrtimer_init(&aw8691->timer, CLOCK_MONOTONIC, HRTIMER_MODE_REL);
 	aw8691->timer.function = aw8691_vibrator_timer_func;
 	INIT_WORK(&aw8691->vibrator_work, aw8691_vibrator_work_routine);

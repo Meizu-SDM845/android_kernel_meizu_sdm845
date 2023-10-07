@@ -3,15 +3,6 @@
 
 /*********************************************************
  *
- * kernel 3.18
- *
- ********************************************************/
-#if LINUX_VERSION_CODE <= KERNEL_VERSION(4, 4, 1)
-#define TIMED_OUTPUT
-#endif
-
-/*********************************************************
- *
  * aw8691.h
  *
  ********************************************************/
@@ -22,11 +13,7 @@
 #include <linux/mutex.h>
 #include <linux/cdev.h>
 #include <linux/pm_wakeup.h>
-#ifdef TIMED_OUTPUT
-#include <../../../../drivers/staging/android/timed_output.h>
-#else
 #include <linux/leds.h>
-#endif
 
 /*********************************************************
  *
@@ -121,11 +108,7 @@ struct aw8691 {
 	struct hrtimer timer;
 	struct work_struct vibrator_work;
 	struct work_struct rtp_work;
-#ifdef TIMED_OUTPUT
-	struct timed_output_dev to_dev;
-#else
 	struct led_classdev cdev;
-#endif
 
 	int reset_gpio;
 	int irq_gpio;
