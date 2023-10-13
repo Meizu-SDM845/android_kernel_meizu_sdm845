@@ -64,3 +64,17 @@
 		};
 	};
 };
+
+&qupv3_se7_i2c {
+	status = "ok";
+	qcom,clk-freq-out = <1000000>;
+
+	aw8691@5a {
+		compatible = "meizu,aw8691_haptic";
+		reg = <0x5a>;
+		reset-gpio = <&tlmm 0x2c 0x00>;
+		pinctrl-names = "default";
+		pinctrl-0 = <&haptic_default>;
+		irq-gpio = <&tlmm 0x45 0x00>;
+	};
+};
